@@ -82,12 +82,12 @@ if __name__ == '__main__':
     # open()메서드 안에는 이미지의 경로가 들어간다.
     # 파일형식 jpg, png 둘중에 하나 불러옴
     try:
-        basic_image = Image.open("C:\\Users\\shindonghwi\\Desktop\\텍스트이미지\\test3.jpg")
+        basic_image = Image.open("C:\\Users\\shindonghwi\\Desktop\\텍스트이미지\\test1.jpg")
         print('jpg이미지 선택')
     except:
         print('png이미지 선택 -> jpg로 변환함')
         # png형태로는 이미지 전처리가 안된다. 이유는 잘 모르겠음. 그래서 jpg로 변환을 해준다.
-        basic_image = Image.open("C:\\Users\\shindonghwi\\Desktop\\텍스트이미지\\test3.png")
+        basic_image = Image.open("C:\\Users\\shindonghwi\\Desktop\\텍스트이미지\\test1.png")
         basic_image = basic_image.convert('RGB')
 
     # 원본이미지 저장 / 마지막에 원본이미지 위위에 글 영역 네모박스를 치기 위해 필요함.
@@ -109,8 +109,8 @@ if __name__ == '__main__':
     print('original Height       : ', original_image_height)
 
     min_size = 800
-    mid_size = 800
-    mid2_size = 1100
+    mid_size = 1000
+    mid2_size = 1200
     max_size = 1500
     # image 재 조정 : 가로 세로를 512로 맞출거임
     # 고정된 크기의 이미지가 들어온다고 가정하고 실험해볼거
@@ -255,10 +255,34 @@ if __name__ == '__main__':
         C – 보정 상수로서 adaptive에 계산된 값에서 양수면 빼주고 음수면 더해준다. 
     """
     # 이진화 방법 2. - Adaptive Threshold 이미지는 영역을 분할하고 임계값을 자동으로 조정해 얻은 흑백 이미지
-    AdapThreshold_GAUSSIAN_C = cv2.adaptiveThreshold(morph_gradient_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-                                                     cv2.THRESH_BINARY_INV, 9, 12)
-    AdapThreshold_MEAN = cv2.adaptiveThreshold(morph_gradient_image, 255, cv2.ADAPTIVE_THRESH_MEAN_C,
+    if original_image_width == 800:
+        AdapThreshold_GAUSSIAN_C = cv2.adaptiveThreshold(morph_gradient_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                                                         cv2.THRESH_BINARY_INV, 15, 12)
+        AdapThreshold_MEAN = cv2.adaptiveThreshold(morph_gradient_image, 255, cv2.ADAPTIVE_THRESH_MEAN_C,
+                                                   cv2.THRESH_BINARY_INV, 7, 20)
+    elif original_image_width == 1000:
+        AdapThreshold_GAUSSIAN_C = cv2.adaptiveThreshold(morph_gradient_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                                                         cv2.THRESH_BINARY_INV, 25, 12)
+        AdapThreshold_MEAN = cv2.adaptiveThreshold(morph_gradient_image, 255, cv2.ADAPTIVE_THRESH_MEAN_C,
+                                                   cv2.THRESH_BINARY_INV, 7, 20)
+    elif original_image_width == 1200:
+        AdapThreshold_GAUSSIAN_C = cv2.adaptiveThreshold(morph_gradient_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                                                         cv2.THRESH_BINARY_INV, 25, 12)
+        AdapThreshold_MEAN = cv2.adaptiveThreshold(morph_gradient_image, 255, cv2.ADAPTIVE_THRESH_MEAN_C,
+                                                   cv2.THRESH_BINARY_INV, 7, 20)
+    elif original_image_width == 1500:
+        AdapThreshold_GAUSSIAN_C = cv2.adaptiveThreshold(morph_gradient_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                                                         cv2.THRESH_BINARY_INV, 29, 12)
+        AdapThreshold_MEAN = cv2.adaptiveThreshold(morph_gradient_image, 255, cv2.ADAPTIVE_THRESH_MEAN_C,
+                                                   cv2.THRESH_BINARY_INV, 7, 20)
+    elif original_image_width == 3000:
+        AdapThreshold_GAUSSIAN_C = cv2.adaptiveThreshold(morph_gradient_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                                                         cv2.THRESH_BINARY_INV, 35, 12)
+        AdapThreshold_MEAN = cv2.adaptiveThreshold(morph_gradient_image, 255, cv2.ADAPTIVE_THRESH_MEAN_C,
                                                cv2.THRESH_BINARY_INV, 7, 20)
+
+
+
     # cv2.imshow('AdapThreshold_GAUSSIAN_C',AdapThreshold_GAUSSIAN_C)
     # cv2.imshow('AdapThreshold_MEAN',AdapThreshold_MEAN)
 
@@ -354,7 +378,8 @@ if __name__ == '__main__':
         # len(contours[i]) --> 점의 갯수 / 너무 많은 점으로 이루어지거나 너무 적은 점으로 이루어진 것은 글자라고 판단안한다.
         """ 이 코드도 이미지 크기 별로 글자폭이 다르니 여러 Case를 두고 수정을 해야할것같다. 2019.11.13 - 11:26 """
         word_width = 10
-        if X_MAX - X_MIN <= word_width or Y_MAX - Y_MIN <= word_width or len(contours[i]) <= 20 or len(contours[i]) >= 200:
+        word_height = 10
+        if X_MAX - X_MIN <= word_width or Y_MAX - Y_MIN <= word_height or len(contours[i]) <= 15 or len(contours[i]) >= original_image_width - int(original_image_width / 8):
             contours_remove_list.append(i)
         else:
             point_list.append([X_MIN,Y_MIN,X_MAX,Y_MAX])
@@ -368,9 +393,9 @@ if __name__ == '__main__':
             """------------------------------------------------------------------------------------------------------------------------------------"""
             """---------------------------------------------------7.2 글자 좌표 빨간색으로 찍기------------------------------------------------------"""
             """------------------------------------------------------------------------------------------------------------------------------------"""
-            # 원본 이미지 글자 위에 왼쪽 상단의 좌표와, 오른쪽 하단의 좌표를 초록색으로 찍는 코드
-            draw_image = cv2.circle(original_image,(X_MIN,Y_MIN), 5, (0,0,255), -1)
-            draw_image = cv2.circle(original_image,(X_MAX,Y_MAX), 5, (0,0,255), -1)
+            # 원본 이미지 글자 위에 왼쪽 상단의 좌표와, 오른쪽 하단의 좌표를 빨간색으로 찍는 코드
+            draw_image = cv2.circle(original_image,(X_MIN,Y_MIN), 3, (0,0,255), -1)
+            draw_image = cv2.circle(original_image,(X_MAX,Y_MAX), 3, (0,0,255), -1)
 
     print('제외할 contours 개수 : ', len(contours_remove_list))
 
@@ -407,7 +432,7 @@ if __name__ == '__main__':
     print('사용할 contours 개수 : ', len(contours))
 
     # 원본 이미지의 텍스트를 따라 파란색으로 그려주는 코드
-    draw_image = cv2.drawContours(original_image, contours, -1, (255,0,0), 2)
+    draw_image = cv2.drawContours(original_image, contours, -1, (255,0,0), 1)
 
     # 그려진 이미지 저장
     cv2.imwrite('result.jpg', draw_image)
