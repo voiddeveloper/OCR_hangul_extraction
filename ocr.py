@@ -1,8 +1,8 @@
 from PIL import Image
+import PIL.Image as pilimg
 import cv2
 import time
 import numpy as np
-from operator import itemgetter
 
 """
 
@@ -82,17 +82,18 @@ if __name__ == '__main__':
     # open()메서드 안에는 이미지의 경로가 들어간다.
     # 파일형식 jpg, png 둘중에 하나 불러옴
     try:
-        basic_image = Image.open("C:\\Users\\shindonghwi\\Desktop\\텍스트이미지\\test1.jpg")
+        basic_image = Image.open("C:\\Users\\shindonghwi\\Desktop\\텍스트이미지\\test3.jpg")
         print('jpg이미지 선택')
     except:
         print('png이미지 선택 -> jpg로 변환함')
         # png형태로는 이미지 전처리가 안된다. 이유는 잘 모르겠음. 그래서 jpg로 변환을 해준다.
-        basic_image = Image.open("C:\\Users\\shindonghwi\\Desktop\\텍스트이미지\\test1.png")
+        basic_image = Image.open("C:\\Users\\shindonghwi\\Desktop\\텍스트이미지\\test3.png")
         basic_image = basic_image.convert('RGB')
 
     # 원본이미지 저장 / 마지막에 원본이미지 위위에 글 영역 네모박스를 치기 위해 필요함.
     # original_image - 아래 7번과정에서 사용 / 글 영역 네모박스 치는 메서드를 사용할때 numpy.ndarray 자료형을 필요로 해서 일단 이렇게 만들어둠.
     original_image = np.asarray(basic_image)
+
 
     """------------------------------------------------------------------------------------------------------------------------------------"""
     """---------------------------------------------------------2. 이미지 사이즈 조정--------------------------------------------------------"""
@@ -138,7 +139,7 @@ if __name__ == '__main__':
     # 가로 또는 세로의 크기가 900이상 작을때, cv2.INTER_AREA 작은 이미지를 크게 만들때 사용한다.
     elif original_image_width + original_image_height < 2000 and (
             original_image_width <= 1300 or original_image_height <= 1300):
-        print('가로 or 세로 1500이하')
+        print('가로 or 세로 1300이하')
         original_image = cv2.resize(original_image, (mid2_size, mid2_size), interpolation=cv2.INTER_CUBIC)
         original_image_height = original_image.shape[0]
         original_image_width = original_image.shape[1]
@@ -148,7 +149,7 @@ if __name__ == '__main__':
     # 가로 또는 세로의 크기가 900이상 작을때, cv2.INTER_AREA 작은 이미지를 크게 만들때 사용한다.
     elif original_image_width + original_image_height <= 2300 and (
             original_image_width <= 1100 and original_image_height <= 1650):
-        print('가로 or 세로 1500이하')
+        print('가로 or 세로 1100이하')
         original_image = cv2.resize(original_image, (max_size, max_size), interpolation=cv2.INTER_CUBIC)
         original_image_height = original_image.shape[0]
         original_image_width = original_image.shape[1]
@@ -426,7 +427,7 @@ if __name__ == '__main__':
         """-----------------------------------------8. 영역이 그려진 부분을 고정된 크기의 이미지로 만들어서 저장------------------------------------"""
         """------------------------------------------------------------------------------------------------------------------------------------"""
         # 이미지가 저장될 경로는 메서드 안에서 수정한다.
-        img_crop_after_img_save(x1,y1,x2,y2,original_image,crop_image_index)
+        # img_crop_after_img_save(x1,y1,x2,y2,original_image,crop_image_index)
         crop_image_index += 1
 
     print('사용할 contours 개수 : ', len(contours))
