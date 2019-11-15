@@ -5,48 +5,31 @@ import time
 import numpy as np
 
 """
-
 마지막 작업일자 : 2019년 11월 13일 - 15:40분
-
 이 코드는 이미지에서 텍스트 영역만을 추출해내기 위해 전 처리 작업을 하는 코드이다.
 목적은 이미지에서 글자의 영역 주변에 네모박스를 그린 후에, 영역이 쳐진 부분을 잘라내어 새로운 이미지를 만드는 것.
-
 과정은 아래와 같다.
-
 1. 전 처리할 이미지 열기 - 사용할 이미지는 basic_image에 저장
-
 2. 이미지 사이즈 조정 - 고정된 이미지(512,512) 가 들어왔다는 가정하에 실험할거임
-
 3. RGB 이미지 -> GrayImage로 변환
-
 4. 물체의 외각선을 정교하게 추출하는 과정
-
 5. 이진화 과정
-
 6. 잡음제거 과정
-
 7. 원본 이미지에서 글자를 찾아 영역 박스 그리기 - 3가지 과정
     7.1 글자 좌표 찾기
     7.2 글자 좌표 빨간색으로 찍기
     7.3. 글자 좌표를 가지고 네모영역(박스) 그리기
-
 8. 영역이 그려진 부분을 고정된 크기의 이미지로 만들어서 저장
-
-
-
 !!!!! 필독 !!!!!
-
 코드 사용 시 수정 해야할 부분
-
 * 1번 과정 - 전 처리할 이미지 열기 - 분석할 이미지의 경로를 수정해야함.
     변수명 - basic_image
-
 * 8번 과정 - 분석 후 저장될 이미지의 폳더를 수정해야함.
     cv2.imwrite( 여기 수정! 폴더가 들어와야함 , cropped )
     
 * 최종 분석 전 이미지는 현재 경로에 result.jpg로 저장된다.
-
 """
+
 
 # png 파일을 jpg로 만드는 메서드임 , 전처리 과정에서 png 파일 인식못해서 우선 이렇게 만듦
 def png_to_jpg(png_path, target_img):
@@ -61,11 +44,13 @@ def png_to_jpg(png_path, target_img):
 
     return img.save(jpg_path, 'JPEG')
 
-#이미지 번호
-def img_crop_after_img_save(x1,y1,x2,y2,img,index):
+
+# 이미지 번호
+def img_crop_after_img_save(x1, y1, x2, y2, img, index):
     cropped = img[y1:y2, x1:x2]
     cropped = cv2.resize(cropped, (150, 150), interpolation=cv2.INTER_AREA)
-    cv2.imwrite('image/crop_image_'+str(index)+'.jpg', cropped)
+    cv2.imwrite('image/crop_image_' + str(index) + '.jpg', cropped)
+
 
 if __name__ == '__main__':
 
@@ -82,18 +67,17 @@ if __name__ == '__main__':
     # open()메서드 안에는 이미지의 경로가 들어간다.
     # 파일형식 jpg, png 둘중에 하나 불러옴
     try:
-        basic_image = Image.open("C:\\Users\\shindonghwi\\Desktop\\텍스트이미지\\test3.jpg")
+        basic_image = Image.open("C:\\Users\\shindonghwi\\Desktop\\텍스트이미지\\test1.jpg")
         print('jpg이미지 선택')
     except:
         print('png이미지 선택 -> jpg로 변환함')
         # png형태로는 이미지 전처리가 안된다. 이유는 잘 모르겠음. 그래서 jpg로 변환을 해준다.
-        basic_image = Image.open("C:\\Users\\shindonghwi\\Desktop\\텍스트이미지\\test3.png")
+        basic_image = Image.open("C:\\Users\\shindonghwi\\Desktop\\텍스트이미지\\test1.png")
         basic_image = basic_image.convert('RGB')
 
     # 원본이미지 저장 / 마지막에 원본이미지 위위에 글 영역 네모박스를 치기 위해 필요함.
     # original_image - 아래 7번과정에서 사용 / 글 영역 네모박스 치는 메서드를 사용할때 numpy.ndarray 자료형을 필요로 해서 일단 이렇게 만들어둠.
     original_image = np.asarray(basic_image)
-
 
     """------------------------------------------------------------------------------------------------------------------------------------"""
     """---------------------------------------------------------2. 이미지 사이즈 조정--------------------------------------------------------"""
@@ -280,9 +264,7 @@ if __name__ == '__main__':
         AdapThreshold_GAUSSIAN_C = cv2.adaptiveThreshold(morph_gradient_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
                                                          cv2.THRESH_BINARY_INV, 35, 12)
         AdapThreshold_MEAN = cv2.adaptiveThreshold(morph_gradient_image, 255, cv2.ADAPTIVE_THRESH_MEAN_C,
-                                               cv2.THRESH_BINARY_INV, 7, 20)
-
-
+                                                   cv2.THRESH_BINARY_INV, 7, 20)
 
     # cv2.imshow('AdapThreshold_GAUSSIAN_C',AdapThreshold_GAUSSIAN_C)
     # cv2.imshow('AdapThreshold_MEAN',AdapThreshold_MEAN)
@@ -316,6 +298,7 @@ if __name__ == '__main__':
     # mode - cv2.RETR_LIST - 모든 컨투어 라인을 찾지만, 상하구조(hierachy)관계를 구성하지 않음
     # mode - cv2.RETR_TREE - 모든 컨투어 라인을 찾고, 모든 상하구조를 구성함
     # mode - cv2.RETR_CCOMP - 모든 컨투어 라인을 찾고, 상하구조는 2 단계로 구성함
+    # mode - cv2.RETR_EXTERNAL - 외각 영역만 찾는다.
     # method - 컨투어를 찾을때 사용하는 근사화 방법
     # method - cv2.CHAIN_APPROX_NONE: 모든 컨투어 포인트를 반환
     """ # method - cv2.CHAIN_APPROX_SIMPLE: 컨투어 라인을 그릴 수 있는 포인트만 반환 """
@@ -337,7 +320,6 @@ if __name__ == '__main__':
     # point_index = 0
 
     print('전체 contours 개수 : ', len(contours))
-
 
     """------------------------------------------------------------------------------------------------------------------------------------"""
     """-----------------------------------------------------------7.1 글자 좌표 찾기--------------------------------------------------------"""
@@ -380,10 +362,31 @@ if __name__ == '__main__':
         """ 이 코드도 이미지 크기 별로 글자폭이 다르니 여러 Case를 두고 수정을 해야할것같다. 2019.11.13 - 11:26 """
         word_width = 10
         word_height = 10
-        if X_MAX - X_MIN <= word_width or Y_MAX - Y_MIN <= word_height or len(contours[i]) <= 15 or len(contours[i]) >= original_image_width - int(original_image_width / 8):
+        # x의한변
+        x_distance = X_MAX - X_MIN
+
+        # y의한변
+        y_distance = Y_MAX - Y_MIN
+
+        if (x_distance / y_distance) < 0.4:
+            print((x_distance / y_distance))
+
+        # (x_distance/y_distance)<0.4)-조건은글자주변에네모영역을쳤을때,가로길이가세로길이보다긴경우를뜻한다.
+        # x_distance<=word_width-설정한단어의가로길이보다글자주변의네모가로길이가크다면글자로인식안함.
+        # y_distance<=word_height-설정한단어의세로길이보다글자주변의네모세로길이가크다면글자로인식안함.
+        # (original_image_width-x_distance<=original_image_width/2)-텍스트가로영역이원본이미지의절반이상이라면글자로인식안함
+        # (len(contours[i])<=15)-좌표의개수가너무적다면글자를만들수없기에글자로인식안함
+        # (len(contours[i])<=15)-좌표의개수가너무많다면글자가아닐확률이높기에글자로인식안함
+        if ((x_distance / y_distance) < 0.4) or \
+                (x_distance <= word_width) or \
+                (y_distance <= word_height) or \
+                (original_image_width - x_distance <= original_image_width / 2) or \
+                (len(contours[i]) <= 15) or \
+                (len(contours[i]) >= original_image_width - int(original_image_width / 8)):
+            # 위조건에해당한다면해당배열값을제거함
             contours_remove_list.append(i)
         else:
-            point_list.append([X_MIN,Y_MIN,X_MAX,Y_MAX])
+            point_list.append([X_MIN, Y_MIN, X_MAX, Y_MAX])
             # point_index += 1
             # 원본 이미지 글자 위에 네모 영역을 치는 코드
             # draw_image = cv2.rectangle(original_image, (X_MIN, Y_MIN), (X_MAX, Y_MAX), (0, 0, 255), 1)
@@ -395,12 +398,10 @@ if __name__ == '__main__':
             """---------------------------------------------------7.2 글자 좌표 빨간색으로 찍기------------------------------------------------------"""
             """------------------------------------------------------------------------------------------------------------------------------------"""
             # 원본 이미지 글자 위에 왼쪽 상단의 좌표와, 오른쪽 하단의 좌표를 빨간색으로 찍는 코드
-            draw_image = cv2.circle(original_image,(X_MIN,Y_MIN), 3, (0,0,255), -1)
-            draw_image = cv2.circle(original_image,(X_MAX,Y_MAX), 3, (0,0,255), -1)
+            draw_image = cv2.circle(original_image, (X_MIN, Y_MIN), 3, (0, 0, 255), -1)
+            draw_image = cv2.circle(original_image, (X_MAX, Y_MAX), 3, (0, 0, 255), -1)
 
     print('제외할 contours 개수 : ', len(contours_remove_list))
-
-
 
     # 기억해둔 컨투어를 제외시킨다.
     for i in reversed(contours_remove_list):
@@ -408,20 +409,18 @@ if __name__ == '__main__':
 
     # 가장 작은 y축 값을 기준으로 재 정렬한다.
     """ 원래는 가장 작은 x,y 축을 기준으로 정렬을 하려했는데 python에서 어떻게 하는지 잘 모르겠음 - 2019 . 11.13 - 15:10시"""
-    point_list = sorted(point_list,key=lambda x: x[1], reverse=False)
-
+    point_list = sorted(point_list, key=lambda x: x[1], reverse=False)
 
     # 재 정렬한 좌표를 가지고 글자위에 네모영역을 치는 코드
     # img_crop은 글자의 왼쪽위 좌표와, 오른쪽아래 좌표를 가지고 고정된 크기만큼으로 이미지를 잘라서 저장하는 메서드임
     # crop_image_index는 저장될 이미지의 번호
     crop_image_index = 0
 
-    for x1,y1,x2,y2 in point_list:
-
+    for x1, y1, x2, y2 in point_list:
         """------------------------------------------------------------------------------------------------------------------------------------"""
         """-------------------------------------------7.3. 글자 좌표를 가지고 네모영역(박스) 그리기-----------------------------------------------"""
         """------------------------------------------------------------------------------------------------------------------------------------"""
-        draw_image = cv2.rectangle(original_image, (x1, y1), (x2, y2), (0, 0, 255), 1)
+        draw_image = cv2.rectangle(original_image, (x1, y1), (x2, y2), (0, 0, 255), 3)
 
         """------------------------------------------------------------------------------------------------------------------------------------"""
         """-----------------------------------------8. 영역이 그려진 부분을 고정된 크기의 이미지로 만들어서 저장------------------------------------"""
@@ -433,7 +432,7 @@ if __name__ == '__main__':
     print('사용할 contours 개수 : ', len(contours))
 
     # 원본 이미지의 텍스트를 따라 파란색으로 그려주는 코드
-    draw_image = cv2.drawContours(original_image, contours, -1, (255,0,0), 1)
+    draw_image = cv2.drawContours(original_image, contours, -1, (255, 0, 0), 1)
 
     # 그려진 이미지 저장
     cv2.imwrite('result.jpg', draw_image)
