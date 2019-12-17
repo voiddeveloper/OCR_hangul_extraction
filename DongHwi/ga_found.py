@@ -7,7 +7,7 @@ import math
 resize_width = 50
 resize_height = 50
 
-""" 이거는 안쓰고 있음 , 글자의 뼈대만 추출해내는 코드 """
+""" 이거는 안쓰고 있음 , 글자의 뼈대만 추출해내는 코드  """
 def image_skeleton(image):
 
     kernel = np.ones((3, 3), np.uint8)
