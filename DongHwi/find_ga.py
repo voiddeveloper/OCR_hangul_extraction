@@ -278,21 +278,29 @@ def op_image_thumbnail(op_image, op_image_contour, op_new_contour_list):
 
 def image_comparison(image1, image2):
 
-    my_count = 0
-    my_op_count = 0
+    image1_copy = image1.copy()
+    image2_copy = image2.copy()
+
+    count = 0
+
+    sum = resize_width * resize_height
+
 
     for i in range(resize_width):
         for j in range(resize_height):
-            if image1[i][j] == 0:
-                my_count += 1
+            print("%3d"%image1_copy[i][j], end=" ")
+        print('\n')
+
+    print('\n\n')
 
     for i in range(resize_width):
         for j in range(resize_height):
-            if image1[i][j] == 0 and image2[i][j] == 0:
-                if image1[i][j] == image2[i][j]:
-                    my_op_count += 1
+            print("%3d"%image2_copy[i][j], end=" ")
+            if image1_copy[i][j] == image2_copy[i][j]:
+                count += 1
+        print('\n')
 
-    return ((my_op_count * 100)/my_count)
+    return (count * 100) / sum
 
 if __name__ == '__main__':
     """ 코드 수행시간 측정"""
@@ -341,13 +349,13 @@ if __name__ == '__main__':
         percent = round(percent,2)
 
         print('No.',str(i+1),'과 일치율 : ', percent)
-        if percent > 90:
-            draw = cv2.putText(op_draw_list[i], "No."+ str(i+1) + " : " + str(percent) + "%", (point_min_list[i][0], point_min_list[i][1]), cv2.FONT_HERSHEY_COMPLEX, 0.7, (255, 0, 0))
+        if percent >= 95.5:
+            draw = cv2.putText(op_draw_list[i], "No."+ str(i+1) + " : " + str(percent) + "%", (point_min_list[i][0], point_min_list[i][1]), cv2.FONT_HERSHEY_COMPLEX, 0.7, (0, 0, 255))
         else:
-            draw = cv2.putText(op_draw_list[i], "not found", (10,20), cv2.FONT_HERSHEY_COMPLEX, 0.5, (255, 0, 0))
+            draw = cv2.putText(op_draw_list[i], "No."+ str(i+1) + " : " + str(percent) + "%", (point_min_list[i][0], point_min_list[i][1]), cv2.FONT_HERSHEY_COMPLEX, 0.4, (255, 0, 0))
 
-    # cv2.imshow('my_draw', my_draw)
-    # cv2.imshow('op_draw', draw)
-    # cv2.waitKey(0)
+    cv2.imshow('my_draw', my_draw)
+    cv2.imshow('op_draw', draw)
+    cv2.waitKey(0)
 
     print("걸린 시간 : ", time.time() - start_time)
