@@ -7,7 +7,7 @@ from adaline import AdalineGD
 
 if __name__ == '__main__':
     # iris.data 품종 데이터를 읽어오는 부분, perceptron_iris와 동일함
-    df = pd.read_csv('/Users/narun/Desktop/mylib/iris.data', header = None)
+    df = pd.read_csv('/Users/narun/Desktop/mylib/hwang/iris.data', header = None)
     y = df.iloc[0:100, 4].values
     y = np.where(y == 'Iris-setosa', -1, 1)
     X = df.iloc[0:100, [0, 2]].values
