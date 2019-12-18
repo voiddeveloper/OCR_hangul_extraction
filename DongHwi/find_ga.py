@@ -1,8 +1,8 @@
 import cv2
 import time
 
-resize_width = 20
-resize_height = 20
+resize_width = 100
+resize_height = 100
 
 def 이미지_이진화_및_컨투어_찾기(image):
 
@@ -69,6 +69,12 @@ def 자음_모음_컨투어_구분(image, contour):
 
 def 자음과_연관된_모음찾기(contour_list_자음, contour_list_모음):
     연관_list_contour_index = []
+    new_contour_list = []
+    temp_자음 = []
+    temp_모음 = []
+
+    # print('qw',len(contour_list_자음))
+    # print('qw',len(contour_list_모음))
 
     for 자음_index, 자음_contour in enumerate(contour_list_자음):
         x_min = 9999
@@ -89,13 +95,12 @@ def 자음과_연관된_모음찾기(contour_list_자음, contour_list_모음):
             for j in 모음_contour:
 
                 # 자음의 x 최대 부터 자음의 ( 가로폭 / 2 ) 만큼 더 오른쪽으로 갔을때, 모음이 있다면?
-                if j[0][0] > x_max and j[0][0] < x_max + int((x_max - x_min) / 2):
+                if j[0][0] > x_max and j[0][0] < x_max + int((x_max - x_min)):
                     연관_list_contour_index.append([자음_index, 모음_index])
                     break
 
-    temp_자음 = []
-    temp_모음 = []
-    new_contour_list = []
+    # print('qw',len(연관_list_contour_index))
+
 
     for index, contour_index in enumerate(연관_list_contour_index):
         for i in contour_list_자음[contour_index[0]]:
@@ -108,6 +113,7 @@ def 자음과_연관된_모음찾기(contour_list_자음, contour_list_모음):
         new_contour_list.append([temp_자음+temp_모음])
         temp_자음.clear()
         temp_모음.clear()
+    # print(len(new_contour_list))
 
     return new_contour_list
 
@@ -281,26 +287,49 @@ def image_comparison(image1, image2):
     image1_copy = image1.copy()
     image2_copy = image2.copy()
 
+    # cv2.imshow('1',image1_copy)
+    # cv2.imshow('2',image2_copy)
+    # cv2.waitKey(0)
     count = 0
 
     sum = resize_width * resize_height
 
+    image1_pixel_count = 0
+    image2_pixel_count = 0
 
     for i in range(resize_width):
         for j in range(resize_height):
-            print("%3d"%image1_copy[i][j], end=" ")
-        print('\n')
+            if image1_copy[i][j] == 0:
+                image1_pixel_count += 1
+            if image2_copy[i][j] == 0:
+                image2_pixel_count += 1
+            # print("%3d"%image1_copy[i][j], end=" ")
+        # print('\n')
 
-    print('\n\n')
+    # print('\n')
 
     for i in range(resize_width):
         for j in range(resize_height):
-            print("%3d"%image2_copy[i][j], end=" ")
+            # print("%3d"%image2_copy[i][j], end=" ")
             if image1_copy[i][j] == image2_copy[i][j]:
                 count += 1
-        print('\n')
+        # print('\n')
 
-    return (count * 100) / sum
+    print(image1_pixel_count, image2_pixel_count)
+
+    add = image1_pixel_count / 5
+
+    pixel_range_min = int(image1_pixel_count - add)
+    pixel_range_max = int(image1_pixel_count + add)
+
+    print(pixel_range_min, pixel_range_max, (count * 100) / sum)
+
+    if pixel_range_min > image2_pixel_count or image2_pixel_count > pixel_range_max:
+        print('사이')
+        return 0
+
+    else:
+        return (count * 100) / sum
 
 if __name__ == '__main__':
     """ 코드 수행시간 측정"""
@@ -334,13 +363,11 @@ if __name__ == '__main__':
     my_new_contour_list = 자음과_연관된_모음찾기(my_image_자음_contour_list, my_image_모음_contour_list)
     op_new_contour_list = 자음과_연관된_모음찾기(op_image_자음_contour_list, op_image_모음_contour_list)
 
-
     """ 비교할 이미지의 썸네일을 만든다. 1장"""
     my_thumbnail, my_draw= my_image_thumbnail(my_image, my_image_contour, my_new_contour_list)
 
     """ 비교당할? 이미지의 썸네일을 만든다. 여러장"""
     op_thumbnail_list, op_draw_list, point_min_list = op_image_thumbnail(op_image,op_image_contour,op_new_contour_list)
-
 
     """ 내 이미지와 비교대상 이미지를 픽셀 단위로 비교한다. """
     for i in range(len(op_thumbnail_list)):
@@ -349,8 +376,8 @@ if __name__ == '__main__':
         percent = round(percent,2)
 
         print('No.',str(i+1),'과 일치율 : ', percent)
-        if percent >= 95.5:
-            draw = cv2.putText(op_draw_list[i], "No."+ str(i+1) + " : " + str(percent) + "%", (point_min_list[i][0], point_min_list[i][1]), cv2.FONT_HERSHEY_COMPLEX, 0.7, (0, 0, 255))
+        if percent >= 90:
+            draw = cv2.putText(op_draw_list[i], "No."+ str(i+1) + " : " + str(percent) + "%", (point_min_list[i][0], point_min_list[i][1]), cv2.FONT_HERSHEY_COMPLEX, 0.4, (0, 0, 255))
         else:
             draw = cv2.putText(op_draw_list[i], "No."+ str(i+1) + " : " + str(percent) + "%", (point_min_list[i][0], point_min_list[i][1]), cv2.FONT_HERSHEY_COMPLEX, 0.4, (255, 0, 0))
 
