@@ -1,8 +1,12 @@
 import cv2 as cv
 import numpy as np
 
+###############################################
+# 기준 색과 비교 색의 픽셀 값을 비교하는 코드
+###############################################
+
 # 이미지 불러오기
-imgColor = cv.imread('img/test_5.jpg', cv.IMREAD_COLOR)
+imgColor = cv.imread('hwang/imgSet/test_5.jpg', cv.IMREAD_COLOR)
 resizeImgColor = cv.resize(imgColor, dsize=(10, 10), interpolation= cv.INTER_AREA)
 
 # 불러온 이미지의 높이, 너비

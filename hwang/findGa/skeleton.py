@@ -1,8 +1,14 @@
 import cv2 as cv
 import numpy as np
 
+###############################################
+# '가' 라는 글씨를 찾기 코드
+# 글씨 픽셀을 최대한 가늘게 해서 뼈대를 찾는다.
+# 뼈대의 값이 '가'로 인식되는지 확인한다.
+###############################################
+
 # 이미지 그레이스케일 로 열기
-imgOri = cv.imread('img/find_1.png',0)
+imgOri = cv.imread('hwang/imgSet/find_1.png',0)
 # cv2.imshow("img", img)
 size = np.size(imgOri)
 # print(size)

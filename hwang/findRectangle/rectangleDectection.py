@@ -1,7 +1,12 @@
 import cv2 as cv
 
+###############################################
+# 이미지에서 네모 찾기 코드
+# 작업 중단, pickColor.py에서 이어서 작업
+###############################################
+
 # 이미지 파일 불러오기(컬러)
-imgColor = cv.imread('img/findword.png', cv.IMREAD_COLOR)
+imgColor = cv.imread('hwang/imgSet/findword.png', cv.IMREAD_COLOR)
 
 # 컬러 이미지를 그레이스케일로 변환
 imgGrayscale = cv.cvtColor(imgColor, cv.COLOR_BGR2GRAY)
@@ -33,9 +38,10 @@ for count in contours:
     size = len(approx)
     print(size)
 
-    cv.line(imgColor, tuple(approx[0][0]), tuple(approx[size-1][0]), (0, 255, 0), 3)
-    for k in range(size - 1):
-        cv.line(imgColor, tuple(approx[k][0]), tuple(approx[k + 1][0]),(0, 255, 0), 3)
+    if size == 4:
+        cv.line(imgColor, tuple(approx[0][0]), tuple(approx[size-1][0]), (0, 255, 0), 3)
+        for k in range(size - 1):
+            cv.line(imgColor, tuple(approx[k][0]), tuple(approx[k + 1][0]),(0, 255, 0), 3)
 
 cv.imshow('result', imgColor)
 cv.waitKey(0)

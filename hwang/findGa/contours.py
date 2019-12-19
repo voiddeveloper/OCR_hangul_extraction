@@ -1,8 +1,11 @@
 import cv2 as cv
 import numpy as np
+###############################################
+# '가' 라는 글씨를 찾기 코드
+###############################################
 
 # 이미지 읽어오기, rgv/grayscale/blur/binary 처리된 이미지를 각각 생성
-imgOriginal = cv.imread('img/find_1.png', cv.IMREAD_COLOR)
+imgOriginal = cv.imread('hwang/imgSet/find_1.png', cv.IMREAD_COLOR)
 imgCopy = imgOriginal.copy()
 imgGrayscale = cv.cvtColor(imgOriginal, cv.COLOR_RGB2GRAY)
 imgBlur = cv.GaussianBlur(imgGrayscale, (3, 3), 0)

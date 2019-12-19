@@ -15,7 +15,7 @@ if __name__ == '__main__':
     style.use('seaborn-talk')
 
     # read_csv() 함수를 이용해서 파일을 읽고, pandas의 DataFrame 객체로 변환
-    df = pd.read_csv('/Users/narun/Desktop/mylib/iris.data', header = None)
+    df = pd.read_csv('/Users/narun/Desktop/mylib/hwang/dataSet/iris.data', header = None)
 
     # iris 데이터를 저장한 Dataframe에서 0~99라인까지 5번째 컬럼의 데이터 값을 numpy 배열로 리턴 받아 y에 대입
     # 따라서 iris 데이터 파일에서 100개의 데이터를 추출하여 5번째 컬럼의 데이터 값을 numpy 배열로 리턴한 것이다.
