@@ -197,6 +197,7 @@ def op_image_thumbnail(op_image, op_image_contour, op_new_contour_list):
     result_image_list = []
     op_draw_list = []
     point_min_list = []
+    point_max_list = []
 
     print(len(op_new_contour_list))
     # 만약 연관된 컨투어가 있다면
@@ -224,6 +225,7 @@ def op_image_thumbnail(op_image, op_image_contour, op_new_contour_list):
             op_draw = cv2.rectangle(op_image, (x_min, y_min),(x_max, y_max), (0, 0, 255), 1)
             # op_draw = cv2.putText(op_image, "No."+ str(i), (x_min,y_min), cv2.FONT_HERSHEY_PLAIN, 1.5, (255, 0, 0))
             point_min_list.append([x_min,y_min])
+            point_max_list.append([x_max,y_max])
             op_draw_list.append(op_draw)
 
             # print('\n 비교할 이미지')
@@ -263,6 +265,7 @@ def op_image_thumbnail(op_image, op_image_contour, op_new_contour_list):
             op_draw = cv2.rectangle(op_image, (x_min, y_min),(x_max, y_max), (0, 0, 255), 1)
             # op_draw = cv2.putText(op_image, "No."+ str(i), (x_min,y_min), cv2.FONT_HERSHEY_PLAIN, 1.5, (255, 0, 0))
             point_min_list.append([x_min,y_min])
+            point_max_list.append([x_max,y_max])
 
             op_draw_list.append(op_draw)
 
@@ -279,7 +282,7 @@ def op_image_thumbnail(op_image, op_image_contour, op_new_contour_list):
 
             result_image_list.append(op_result_crop_image)
 
-    return result_image_list, op_draw_list, point_min_list
+    return result_image_list, op_draw_list, point_min_list, point_max_list
 
 
 def image_comparison(image1, image2):
@@ -317,7 +320,7 @@ def image_comparison(image1, image2):
 
     print(image1_pixel_count, image2_pixel_count)
 
-    add = image1_pixel_count / 5
+    add = image1_pixel_count / 3
 
     pixel_range_min = int(image1_pixel_count - add)
     pixel_range_max = int(image1_pixel_count + add)
@@ -339,9 +342,11 @@ if __name__ == '__main__':
     이미지 불러오기 : 폰트 맑은 고딕
     my_image : 비교할 이미지
     op_image : 비교대상 이미지
+    op_image1 : 비교대상 이미지 ( 최종 사각형 그리는데 사용 )
     """
     my_image = cv2.imread('image/ga.png', cv2.IMREAD_COLOR)
-    op_image = cv2.imread('image/ga_test.png', cv2.IMREAD_COLOR)
+    op_image = cv2.imread('image/asdasd.png', cv2.IMREAD_COLOR)
+    op_image1 = cv2.imread('image/asdasd.png', cv2.IMREAD_COLOR)
 
     """ 
     이미지 이진화 처리 및 컨투어 찾기 
@@ -367,7 +372,7 @@ if __name__ == '__main__':
     my_thumbnail, my_draw= my_image_thumbnail(my_image, my_image_contour, my_new_contour_list)
 
     """ 비교당할? 이미지의 썸네일을 만든다. 여러장"""
-    op_thumbnail_list, op_draw_list, point_min_list = op_image_thumbnail(op_image,op_image_contour,op_new_contour_list)
+    op_thumbnail_list, op_draw_list, point_min_list, point_max_list = op_image_thumbnail(op_image,op_image_contour,op_new_contour_list)
 
     """ 내 이미지와 비교대상 이미지를 픽셀 단위로 비교한다. """
     for i in range(len(op_thumbnail_list)):
@@ -375,11 +380,13 @@ if __name__ == '__main__':
 
         percent = round(percent,2)
 
-        print('No.',str(i+1),'과 일치율 : ', percent)
+        print('No.',str(i),'과 일치율 : ', percent)
+        print('\n')
         if percent >= 90:
-            draw = cv2.putText(op_draw_list[i], "No."+ str(i+1) + " : " + str(percent) + "%", (point_min_list[i][0], point_min_list[i][1]), cv2.FONT_HERSHEY_COMPLEX, 0.4, (0, 0, 255))
+            draw = cv2.rectangle(op_image1, (point_min_list[i][0], point_min_list[i][1]),(point_max_list[i][0], point_max_list[i][1]), (0, 0, 255), 1)
+            draw = cv2.putText(op_image1, "No."+ str(i) + " : " + str(percent) + "%", (point_min_list[i][0], point_min_list[i][1]), cv2.FONT_HERSHEY_COMPLEX, 0.4, (0, 0, 255))
         else:
-            draw = cv2.putText(op_draw_list[i], "No."+ str(i+1) + " : " + str(percent) + "%", (point_min_list[i][0], point_min_list[i][1]), cv2.FONT_HERSHEY_COMPLEX, 0.4, (255, 0, 0))
+            draw = cv2.putText(op_image1, "not found", (10, 10), cv2.FONT_HERSHEY_COMPLEX, 0.4, (255, 0, 0))
 
     cv2.imshow('my_draw', my_draw)
     cv2.imshow('op_draw', draw)
