@@ -29,7 +29,7 @@ ret, imgBinary = cv.threshold(imgGrayscale, 127, 255, cv.THRESH_BINARY_INV|cv.TH
 # cv.imshow('Corner', imgCopy)
 # cv.waitKey(0)
 #########################################
-# imgCanny = cv.Canny(imgBlur, 100, 200)
+imgCanny = cv.Canny(imgBlur, 100, 200)
 
 # 외각선 따기
 contours, hierarchy = cv.findContours(imgCanny, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
