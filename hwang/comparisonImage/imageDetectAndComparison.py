@@ -180,17 +180,17 @@ for i in range(len(boxPointComparison)):
 # contoursDistance = 기준 이미지에서 1번째 Contour를 기준으로 다른 Contour들 간 얼마나 떨어져 있는지 비교한다. (x축 거리, y축 거리)
 # boxPointComparison = 비교 이미지의 Contour (x, y, w, h) 좌표
 # contoursDistanceComparison = 비교 이미지에서 1번째 Contour를 기준으로 다른 Contour들 간 얼마나 떨어져 있는지 비교한다. (x축 거리, y축 거리)
-print('boxPoint = ', boxPoint)
-print('contoursDistance = ', contoursDistance)
-print('boxPointComparison = ', boxPointComparison)
-print('contoursDistanceComparison = ', contoursDistanceComparison)
-print('boxPoint[0][2] = ', boxPoint[0][2])
+# print('boxPoint = ', boxPoint)
+# print('contoursDistance = ', contoursDistance)
+# print('boxPointComparison = ', boxPointComparison)
+# print('contoursDistanceComparison = ', contoursDistanceComparison)
+# print('boxPoint[0][2] = ', boxPoint[0][2])
 
 # 기준 이미지를 분할하여 각 영역마다 어느정도 픽셀이 있는지 파악하기
 standardPixelInfo = pixelInfo(imgBinary, boxPoint)
 comparisonPixelInfo = pixelInfo(imgBinaryComparison, boxPointComparison)
-print('standardPixelInfo = ', standardPixelInfo)
-print('comparisonPixelInfo = ', comparisonPixelInfo)
+# print('standardPixelInfo = ', standardPixelInfo)
+# print('comparisonPixelInfo = ', comparisonPixelInfo)
 
 ########################################################################################
 # 3. 기준 이미지와 비교 이미지의 비율 차이를 구하고, 비율이 동일한지 확인한다.
@@ -233,7 +233,7 @@ for i in range(len(boxPointComparison)):
                 finalOrder.append(i)
                 for l in range(len(flag)):
                     finalOrder.append(flag[l])
-                print(finalOrder)
+                # print(finalOrder)
 
                 # 기준 이미지의 영역 비율과 비교 이미지의 영역 비율이 일치하는지 확인한다.
                 maxRange = 0
@@ -245,7 +245,7 @@ for i in range(len(boxPointComparison)):
                         if maxRange < minmaxRange:
                             maxRange = minmaxRange
 
-                print('maxRange = ', maxRange)
+                # print('maxRange = ', maxRange)
                 if maxRange <= errorEqualRate:
                     # 테두리 치기
                     minX = boxPointComparison[finalOrder[0]][0]
