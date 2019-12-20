@@ -6,14 +6,16 @@ import math
 # 전역 변수 모음
 # 테스트할 파일 이름
 standardFile = 'hwang/imgSet/test_standard2.png'
-comparisonFile = 'hwang/imgSet/test_comparison2.png'
-# 비교 픽셀 오차 범위
-errorRangePixel = 5
+comparisonFile = 'hwang/imgSet/test_comparison3.png'
+# 기준/비교 contour * ratio간 픽셀 오차 범위 (단위: 픽셀 절대값)
+errorRangePixel = 10
 # errorRangePixel = 0.05
-# 비교하지 않는 픽셀 범위
-exceptionPixel = 8
+# 비교하지 않는 픽셀 범위 (단위: 픽셀 절대값)
+exceptionPixel = 6
 # 이미지를 분할하여 구분할 때 분할 범위
-divisionCount = 4
+divisionCount = 3
+# 영역간 픽셀 일치 오차율(단위: %)
+errorEqualRate = 25
 ###############################################################
 
 # 목표: 기준 이미지와 비슷한 모양을 비교 이미지에서 찾아낸다.
@@ -31,6 +33,9 @@ divisionCount = 4
 # 개선 사항: 여기서 추가적으로 기준 이미지의 contour와 비교 이미지의 contour 픽셀을 비교하면 좀 더 정확할 것 같다.
 
 # 해당 위치에 label을 입력하는 메서드
+# image = cv이미지
+# str = label에 입력할 텍스트
+# contour = contour 위치
 def setLabel(image, str, contour):
     (textWidth, textHeight), baseLine = cv.getTextSize(str, cv.FONT_HERSHEY_SIMPLEX, 0.7, 1)
     x, y, width, height = cv.boundingRect(contour)
@@ -38,6 +43,40 @@ def setLabel(image, str, contour):
     ptY = y + int((height + textHeight) / 2)
     cv.rectangle(image, (ptX, ptY + baseLine), (ptX + textWidth, ptY - textHeight), (200, 200, 200), cv.FILLED)
     cv.putText(image, str, (ptX, ptY), cv.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 1, 8)
+
+# 픽셀을 n등분하여 각 영역별 얼마나 분포되어 있는지 구하는 메서드
+# image = cv이미지(binary 이미지를 추천함)
+# pixelPoint = image 내에 존재하는 contour 집합 리스트, (x,y,w,h)로 구성한다.
+def pixelInfo(image, pixelPoint):
+    pixelLocation = []
+    for i in range(len(pixelPoint)):
+        imgCut = image.copy()
+        # contour를 기준으로 이미지를 분할한다.
+        imgCut = image[pixelPoint[i][1]:pixelPoint[i][1] + pixelPoint[i][3], pixelPoint[i][0]:pixelPoint[i][0] + pixelPoint[i][2]]
+        # n등분할 때 소수점이 나오지 않도록 resize 한다.
+        imgResize = cv.resize(imgCut, (0, 0), fx = divisionCount, fy = divisionCount, interpolation= cv.INTER_AREA)
+
+        # 각 contour 영역을 divisionCount값 만큼 분할한다.
+        contourPixelInfo = []
+        for j in range(divisionCount):
+            for k in range(divisionCount):
+                contourCut = imgResize.copy()
+                contourCut = imgResize[k * pixelPoint[i][3]:k * pixelPoint[i][3] + pixelPoint[i][3], j * pixelPoint[i][2]:j * pixelPoint[i][2] + pixelPoint[i][2]]
+
+                # 각 분할된 영역마다 Pixel 값이 몇%나 차지하는지 확인한다.
+                height, width = contourCut.shape[:2]
+                totalPixel = 0
+                for m in range(0, height):
+                    for n in range(0, width):
+                        totalPixel += (contourCut[m, n] / 255)
+                pixelRatio = round((totalPixel / (height * width)) * 100, 2)
+
+                # 영역 차지 값을 저장한다.
+                contourPixelInfo.append(pixelRatio)
+
+        # contour별 영역 차지 값을 저장해서 반환한다.
+        pixelLocation.append(contourPixelInfo)
+    return pixelLocation
 
 # 기준 이미지, 비교 이미지 설정
 imgStandard = cv.imread(standardFile, cv.IMREAD_COLOR)
@@ -124,9 +163,9 @@ for i in range(len(contoursComparison)):
     # 테투리로 영역 설정하기
     # cv.drawContours(imgStandard, [cnt], 0, (0, 255, 0), 2)
     # 사각형으로 영역 설정하기 
-    rectangleCount += 1
-    cv.rectangle(imgComparison, (x, y), (x + w, y + h), (0, 255, 0), 1)
+    # cv.rectangle(imgComparison, (x, y), (x + w, y + h), (0, 255, 0), 1)
     # setLabel(imgComparison, str(rectangleCount), cnt)
+    rectangleCount += 1
 
 # 영역별 거리값 구하기
 for i in range(len(boxPointComparison)):
@@ -147,23 +186,11 @@ print('boxPointComparison = ', boxPointComparison)
 print('contoursDistanceComparison = ', contoursDistanceComparison)
 print('boxPoint[0][2] = ', boxPoint[0][2])
 
-# for i in range(len(boxPoint)):
-#     imgCut = imgBinary.copy()
-#     imgCut = imgBinary[boxPoint[i][1]:boxPoint[i][1] + boxPoint[i][3], boxPoint[i][0]:boxPoint[i][0] + boxPoint[i][2]]
-#     imgResize = cv.resize(imgCut, (0, 0), fx = divisionCount, fy = divisionCount, interpolation= cv.INTER_AREA)
-#     demensions = imgResize.shape
-#     print(demensions)
-#     # cv.imshow('de', imgResize)
-#     # cv.waitKey(0)
-#     # cv.destroyWindow('de')
-#     for j in range(divisionCount):
-#         for k in range(divisionCount):
-#             contourCut = imgResize.copy()
-#             contourCut = imgResize[k * boxPoint[i][3]:k * boxPoint[i][3] + boxPoint[i][3], j * boxPoint[i][2]:j * boxPoint[i][2] + boxPoint[i][2]]
-#             # cv.imshow('de', contourCut)
-#             # cv.waitKey(0)
-#             # cv.destroyWindow('de')
-
+# 기준 이미지를 분할하여 각 영역마다 어느정도 픽셀이 있는지 파악하기
+standardPixelInfo = pixelInfo(imgBinary, boxPoint)
+comparisonPixelInfo = pixelInfo(imgBinaryComparison, boxPointComparison)
+print('standardPixelInfo = ', standardPixelInfo)
+print('comparisonPixelInfo = ', comparisonPixelInfo)
 
 ########################################################################################
 # 3. 기준 이미지와 비교 이미지의 비율 차이를 구하고, 비율이 동일한지 확인한다.
@@ -176,6 +203,9 @@ for i in range(len(boxPointComparison)):
     # 늘어난 비율만큼을 적용해서 height값도 일치하는지 확인 (+- 오차 범위를 준다.)
     # 이 조건을 일치하지 않으면 어차피 같은 비율의 그림이 아니기 때문에 더 이상 비교할 필요가 없다.
     if boxPointComparison[i][2] > exceptionPixel and boxPointComparison[i][3] > exceptionPixel:
+        # print('ratio = ', ratio)
+        # print('boxPoint[0][3] * ratio = ', boxPoint[0][3] * ratio)
+        # print('boxPointComparison[i][3] = ', boxPointComparison[i][3])
         if(boxPointComparison[i][3] <= (boxPoint[0][3] * ratio) + errorRangePixel and boxPointComparison[i][3] >= (boxPoint[0][3] * ratio) - errorRangePixel):
         # if(boxPointComparison[i][3] <= (boxPoint[0][3] * ratio) * (1 + errorRangePixel) and boxPointComparison[i][3] >= (boxPoint[0][3] * ratio) * (1 - errorRangePixel)):
             
@@ -203,26 +233,40 @@ for i in range(len(boxPointComparison)):
                 finalOrder.append(i)
                 for l in range(len(flag)):
                     finalOrder.append(flag[l])
+                print(finalOrder)
 
-                minX = boxPointComparison[finalOrder[0]][0]
-                maxX = boxPointComparison[finalOrder[0]][0] + boxPointComparison[finalOrder[0]][2]
-                minY = boxPointComparison[finalOrder[0]][1]
-                maxY = boxPointComparison[finalOrder[0]][1] + boxPointComparison[finalOrder[0]][3]
-
+                # 기준 이미지의 영역 비율과 비교 이미지의 영역 비율이 일치하는지 확인한다.
+                maxRange = 0
                 for m in range(len(finalOrder)):
-                    if minX > boxPointComparison[finalOrder[m]][0]:
-                        minX = boxPointComparison[finalOrder[m]][0]
+                    for n in range(0, pow(divisionCount, 2)):
+                        # print('standardPixelInfo = ', standardPixelInfo[m][n])
+                        # print('comparisonPixelInfo = ', comparisonPixelInfo[finalOrder[m]][n])
+                        minmaxRange = math.sqrt(pow(standardPixelInfo[m][n] - comparisonPixelInfo[finalOrder[m]][n], 2))
+                        if maxRange < minmaxRange:
+                            maxRange = minmaxRange
 
-                    if maxX < boxPointComparison[finalOrder[m]][0] + boxPointComparison[finalOrder[m]][2]:
-                        maxX = boxPointComparison[finalOrder[m]][0] + boxPointComparison[finalOrder[m]][2]
-                    
-                    if minY > boxPointComparison[finalOrder[m]][1]:
-                        minY = boxPointComparison[finalOrder[m]][1]
+                print('maxRange = ', maxRange)
+                if maxRange <= errorEqualRate:
+                    # 테두리 치기
+                    minX = boxPointComparison[finalOrder[0]][0]
+                    maxX = boxPointComparison[finalOrder[0]][0] + boxPointComparison[finalOrder[0]][2]
+                    minY = boxPointComparison[finalOrder[0]][1]
+                    maxY = boxPointComparison[finalOrder[0]][1] + boxPointComparison[finalOrder[0]][3]
 
-                    if maxY < boxPointComparison[finalOrder[m]][1] + boxPointComparison[finalOrder[m]][3]:
-                        maxY = boxPointComparison[finalOrder[m]][1] + boxPointComparison[finalOrder[m]][3]
+                    for m in range(len(finalOrder)):
+                        if minX > boxPointComparison[finalOrder[m]][0]:
+                            minX = boxPointComparison[finalOrder[m]][0]
 
-                cv.rectangle(imgComparison, (minX, minY), (maxX, maxY), (0, 0, 255), 2)
+                        if maxX < boxPointComparison[finalOrder[m]][0] + boxPointComparison[finalOrder[m]][2]:
+                            maxX = boxPointComparison[finalOrder[m]][0] + boxPointComparison[finalOrder[m]][2]
+                        
+                        if minY > boxPointComparison[finalOrder[m]][1]:
+                            minY = boxPointComparison[finalOrder[m]][1]
+
+                        if maxY < boxPointComparison[finalOrder[m]][1] + boxPointComparison[finalOrder[m]][3]:
+                            maxY = boxPointComparison[finalOrder[m]][1] + boxPointComparison[finalOrder[m]][3]
+
+                    cv.rectangle(imgComparison, (minX, minY), (maxX, maxY), (0, 0, 255), 2)
 
 cv.imshow('comparison', imgComparison)
 cv.waitKey(0)
