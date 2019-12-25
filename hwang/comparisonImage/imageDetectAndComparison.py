@@ -245,7 +245,7 @@ for i in range(len(boxPointComparison)):
                         if maxRange < minmaxRange:
                             maxRange = minmaxRange
 
-                # print('maxRange = ', maxRange)
+                print('maxRange = ', maxRange)
                 if maxRange <= errorEqualRate:
                     # 테두리 치기
                     minX = boxPointComparison[finalOrder[0]][0]
