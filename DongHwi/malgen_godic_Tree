@@ -62,7 +62,7 @@ def 중앙선가로로나누기(rgb_image, basic_binary_image, point_dict):
         for j in range(point_dict['x_min'], point_dict['x_max']):
             if i == point_dict['y_mid']:
                 mid_list.append(basic_binary_image[i][j])
-                # draw = cv2.circle(image_copy, (j,i), 1 , (0,0,255), 1)
+                draw = cv2.circle(image_copy, (j,i), 1 , (0,0,255), 1)
 
 
     # 글자가 바뀌는 지점을 찾아낸다. 0 -> 255 또는 255 -> 0
@@ -143,7 +143,7 @@ def 가로선_0부터_중앙사이_세로로나누기(rgb_image, basic_binary_im
 
     return pixel_change_count
 
-def 오른쪽중앙픽셀검사(rgb_image, basic_binary_image, point_dict):
+def 오른쪽중앙과아래사이픽셀검사(rgb_image, basic_binary_image, point_dict):
 
     """
     중앙오른쪽 4개의 픽셀 검사해서 있는지 판단한다. ( 너무 작은 이미지에선 안 될 수도 있음 )
@@ -163,15 +163,15 @@ def 오른쪽중앙픽셀검사(rgb_image, basic_binary_image, point_dict):
         for j in range(point_dict['x_min'], point_dict['x_max']):
 
             # 오른쪽 위 4픽셀을 검사한다.
-            if i == point_dict['y_mid'] and j == point_dict['x_max'] - 1:
+            if i == int((point_dict['y_mid'] + point_dict['y_max'])/2) and j == point_dict['x_max'] - 1:
                 mid_list.append(basic_binary_image[i][j])
 
-            if i == point_dict['y_mid'] and j == point_dict['x_max'] - 2:
+            if i == (point_dict['y_mid'] + point_dict['y_max'])/2 and j == point_dict['x_max'] - 2:
                 mid_list.append(basic_binary_image[i][j])
-            if i == point_dict['y_mid'] + 1 and j == point_dict['x_max'] - 1:
+            if i == (point_dict['y_mid'] + point_dict['y_max'])/2 + 1 and j == point_dict['x_max'] - 1:
                 mid_list.append(basic_binary_image[i][j])
 
-            if i == point_dict['y_mid'] + 1 and j == point_dict['x_max'] - 2:
+            if i == (point_dict['y_mid'] + point_dict['y_max'])/2 + 1 and j == point_dict['x_max'] - 2:
                 mid_list.append(basic_binary_image[i][j])
 
     # 모두 검은색이라면 ㄱ
@@ -243,15 +243,15 @@ if __name__ == '__main__':
                 # 있으면 1
                 # 없으면 0
                 """ ㄱ, ㄴ 이 남은 상태에서 오른쪽 중앙 픽셀을 검사한다. 있다면 ㄱ / 없다면 ㄴ 이다. """
-                오른쪽중앙픽셀여부 = 오른쪽중앙픽셀검사(basic_image, basic_binary_image, point_dict)
+                오른쪽중앙과아래사이픽셀여부 = 오른쪽중앙과아래사이픽셀검사(basic_image, basic_binary_image, point_dict)
 
                 # 오른쪽 중앙에 4픽셀에 검은색 픽셀이 있음 -> ㄱ
-                if 오른쪽중앙픽셀여부 == 1:
+                if 오른쪽중앙과아래사이픽셀여부 == 1:
                    print('Giyeok')
                    contour_list.append(con)
                    hangul_list.append('Giyeok')
                 # 오른쪽 중앙에 4픽셀에 검은색 픽셀이 없음 -> ㄴ
-                elif 오른쪽중앙픽셀여부 == 0:
+                elif 오른쪽중앙과아래사이픽셀여부 == 0:
                     print('Nieun')
                     contour_list.append(con)
                     hangul_list.append('Nieun')
@@ -291,17 +291,32 @@ if __name__ == '__main__':
             if 중앙_가로선_픽셀_변경_갯수 == 4:
                 아랫선_픽셀_변경_갯수 = 아랫선가로로나누기(basic_image, basic_binary_image, point_dict)
 
-                # 제일 아래부분을 가로로 선을 그엇을때 픽셀이 변경되는 지점의 개수가 4개인 부분 -> ㅠ
-                if 아랫선_픽셀_변경_갯수 == 4:
+                # 제일 아래부분을 가로로 선을 그엇을때 픽셀이 변경되는 지점의 개수가 0개인 부분 -> ㅛ
+                if 아랫선_픽셀_변경_갯수 == 0:
+                    print('yo')
+                    contour_list.append(con)
+                    hangul_list.append('yo')
+                # 잘못찾음
+                else:
+                    print('1 - 4 - 잘못찾음')
+
+                가로선_0부터_중앙사이_픽셀_변경_갯수 = 가로선_0부터_중앙사이_세로로나누기(basic_image, basic_binary_image, point_dict)
+
+                # 제일 아래부분을 가로로 선을 그엇을때 픽셀이 변경되는 지점의 개수가 4개인 부분 -> ㅠ , ㅈ, ㅅ
+                if 가로선_0부터_중앙사이_픽셀_변경_갯수 == 1:
                     print('u')
                     contour_list.append(con)
                     hangul_list.append('u')
 
-                # 제일 아래부분을 가로로 선을 그엇을때 픽셀이 변경되는 지점의 개수가 0개인 부분 -> ㅛ
-                elif 아랫선_픽셀_변경_갯수 == 0:
-                    print('yo')
+                elif 가로선_0부터_중앙사이_픽셀_변경_갯수 == 2:
+                    print('Sieut')
                     contour_list.append(con)
-                    hangul_list.append('yo')
+                    hangul_list.append('Sieut')
+
+                elif 가로선_0부터_중앙사이_픽셀_변경_갯수 == 3:
+                    print('Tsiwt')
+                    contour_list.append(con)
+                    hangul_list.append('Tsiwt')
 
                 # 잘못찾음
                 else:
