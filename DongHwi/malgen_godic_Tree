@@ -59,7 +59,7 @@ def 중앙선가로로나누기(rgb_image, basic_binary_image, point_dict):
     # 글자의 중앙을 세로로 잘랐을때, 픽셀값을 mid_list에 저장한다.
     mid_list = []
     for i in range(point_dict['y_min'], point_dict['y_max']):
-        for j in range(point_dict['x_min'], point_dict['x_max']):
+        for j in range(point_dict['x_min'] + 1, point_dict['x_max']):
             if i == point_dict['y_mid']:
                 mid_list.append(basic_binary_image[i][j])
                 draw = cv2.circle(image_copy, (j,i), 1 , (0,0,255), 1)
@@ -94,7 +94,7 @@ def 아랫선가로로나누기(rgb_image, basic_binary_image, point_dict):
         for j in range(point_dict['x_min'], point_dict['x_max']):
             if i == point_dict['y_max'] - 1:
                 mid_list.append(basic_binary_image[i][j])
-                draw = cv2.circle(image_copy, (j,i), 1 , (0,0,255), 1)
+                # draw = cv2.circle(image_copy, (j,i), 1 , (0,0,255), 1)
 
 
     # 글자가 바뀌는 지점을 찾아낸다. 0 -> 255 또는 255 -> 0
@@ -120,7 +120,7 @@ def 가로선_0부터_중앙사이_세로로나누기(rgb_image, basic_binary_im
 
     image_copy = rgb_image.copy()
 
-    # 글자의 중앙을 세로로 잘랐을때, 픽셀값을 mid_list에 저장한다.
+    # 글자의 중앙과 제일왼쪽 중간점을 기준으로 세로로 잘랐을때, 픽셀값을 mid_list에 저장한다.
     mid_list = []
     for i in range(point_dict['y_min'], point_dict['y_max']):
         for j in range(point_dict['x_min'], point_dict['x_max']):
@@ -143,52 +143,128 @@ def 가로선_0부터_중앙사이_세로로나누기(rgb_image, basic_binary_im
 
     return pixel_change_count
 
-def 오른쪽중앙과아래사이픽셀검사(rgb_image, basic_binary_image, point_dict):
+def 중앙상단픽셀검사(rgb_image, basic_binary_image, point_dict):
 
     """
-    중앙오른쪽 4개의 픽셀 검사해서 있는지 판단한다. ( 너무 작은 이미지에선 안 될 수도 있음 )
-    모두 검은색 1
-    모두 흰색 0
+    중앙상단 1개의 픽셀 검사해서 있는지 판단한다. ( 너무 작은 이미지에선 안 될 수도 있음 )
+    픽셀이 검은색이면 1
+    픽셀이 흰색이면 0
     """
 
     image_copy = rgb_image.copy()
 
-    # 글자의 오른쪽 중앙 4개의 픽셀을 검사한다.
-    # 이진화 처리하기 때문에 검은색, 흰색으로만 구성이 되어있다.
-    # 모두 검은색이라면 ㄱ
-    # 모두 흰색이라면 ㄴ
+    mid_list = []
+    for i in range(point_dict['y_min'], point_dict['y_max']):
+        for j in range(point_dict['x_min'], point_dict['x_max']):
+            if j == point_dict['x_mid'] and i == point_dict['y_min']:
+                # draw = cv2.circle(image_copy, (j,i), 2, (0,0,255), 3)
+                # cv2.imshow('draw',draw)
+                # cv2.waitKey(0)
+                if basic_binary_image[i][j] == 255:
+                    return 1
+    return 0
+
+
+def 가장왼쪽세로선으로나누기(rgb_image, basic_binary_image, point_dict):
+
+    """
+    글자를 가장 왼쪽 세로선으로 나누었을때 픽셀의 색이 0 -> 255 또는 255 -> 0으로 바뀌는 지점을 찾아낸다.
+    바뀌는 지점이 몇개인지 return
+    """
+
+    image_copy = rgb_image.copy()
+
+    # 글자의 제일왼쪽 선을 기준으로 세로로 잘랐을때, 픽셀값을 mid_list에 저장한다.
+    mid_list = []
+    for i in range(point_dict['y_min'], point_dict['y_max']):
+        for j in range(point_dict['x_min'], point_dict['x_max']):
+            if j == point_dict['x_min'] + 1:
+                mid_list.append(basic_binary_image[i][j])
+                # draw = cv2.circle(image_copy, (j,i), 1 , (0,0,255), 1)
+
+
+    # 글자가 바뀌는 지점을 찾아낸다. 0 -> 255 또는 255 -> 0
+    pixel_change_count = 0
+    for index, binary_value in enumerate(mid_list):
+        if index != len(mid_list) - 1:
+            if mid_list[index] != mid_list[index + 1]:
+                pixel_change_count += 1
+
+    # print(pixel_change_count)
+    #
+    # cv2.imshow('dsf',draw)
+    # cv2.waitKey(0)
+
+    return pixel_change_count
+
+
+def 중앙오른쪽픽셀검사(rgb_image, basic_binary_image, point_dict):
+
+    """
+   오른쪽 중앙 픽셀만 검사한다. ( 너무 작은 이미지에선 안 될 수도 있음 )
+   픽셀이 검은색이면 1
+   픽셀이 흰색이면 0
+   """
+
+    image_copy = rgb_image.copy()
 
     mid_list = []
     for i in range(point_dict['y_min'], point_dict['y_max']):
         for j in range(point_dict['x_min'], point_dict['x_max']):
-
-            # 오른쪽 위 4픽셀을 검사한다.
-            if i == int((point_dict['y_mid'] + point_dict['y_max'])/2) and j == point_dict['x_max'] - 1:
-                mid_list.append(basic_binary_image[i][j])
-
-            if i == (point_dict['y_mid'] + point_dict['y_max'])/2 and j == point_dict['x_max'] - 2:
-                mid_list.append(basic_binary_image[i][j])
-            if i == (point_dict['y_mid'] + point_dict['y_max'])/2 + 1 and j == point_dict['x_max'] - 1:
-                mid_list.append(basic_binary_image[i][j])
-
-            if i == (point_dict['y_mid'] + point_dict['y_max'])/2 + 1 and j == point_dict['x_max'] - 2:
-                mid_list.append(basic_binary_image[i][j])
-
-    # 모두 검은색이라면 ㄱ
-    # 모두 흰색이라면 ㄴ
-    for index, binary_value in enumerate(mid_list):
-        if mid_list[index] == 255:
-            return 1
-
+            if j == point_dict['x_max'] - 1 and i == point_dict['y_mid']:
+                if basic_binary_image[i][j] == 255:
+                    return 1
     return 0
 
+def 왼쪽중앙픽셀만검사(rgb_image, basic_binary_image, point_dict):
+
+    """
+    왼쪽 중앙 픽셀만 검사한다. ( 너무 작은 이미지에선 안 될 수도 있음 )
+    픽셀이 검은색이면 1
+    픽셀이 흰색이면 0
+    """
+    image_copy = rgb_image.copy()
+
+    mid_list = []
+    for i in range(point_dict['y_min'], point_dict['y_max']):
+        for j in range(point_dict['x_min'], point_dict['x_max']):
+            if j == point_dict['x_min'] and i == point_dict['y_mid']:
+                if basic_binary_image[i][j] == 255:
+                    return 1
+    return 0
+
+def 가로세로길이비교(rgb_image, basic_binary_image, point_dict):
+
+    """
+    글자의 가로와 세로길이를 비교하는 메서드
+
+    글자의 가로가 세로보다 5배 이상 길거나 세로 길이가 0이라면 -> ㅡ
+    글자의 세로가 가로보다 5배 이상 길거나 가로 길이가 0이라면 -> ㅣ
+
+    ㅡ -> return 0
+    ㅣ -> return 1
+    ㅗ,ㅜ -> return 2
+    """
+
+    width = point_dict['x_max'] - point_dict['x_min']
+    height = point_dict['y_max'] - point_dict['y_min']
+
+    # ㅡ
+    if width > height * 5 or height == 0:
+        return 0
+    # ㅣ
+    elif height > width * 5 or width == 0:
+        return 1
+    # ㅗ, ㅜ
+    else:
+        return 2
 
 if __name__ == '__main__':
 
     start_time = time.time()
 
     """ 이미지 불러오기 """
-    basic_image = cv2.imread('image/margen_godic/comparisonImage/comparison_image_2.jpg')
+    basic_image = cv2.imread('image/margen_godic/comparisonImage/comparison_image_1.jpg')
 
     """ 이진화 이미지 및 글자의 컨투어 반환
     컨투어 : 물체의 외각선 좌표를 반환해줌 """
@@ -197,7 +273,7 @@ if __name__ == '__main__':
     contour_list = []
     hangul_list = []
 
-
+    """ 트리형태로 글자 구분하기"""
     for i,con in enumerate(basic_contour):
         x_min = 9999
         x_max = 0
@@ -233,8 +309,45 @@ if __name__ == '__main__':
         """ 중앙선을 기준으로 세로로 나누면 픽셀이 바뀌는 지점이 1 ~ 4 개로 나누어진다. """
         중앙_세로선_픽셀_변경_갯수 = 중앙선세로로나누기(basic_image, basic_binary_image, point_dict)
 
+        # 중앙선을 기준으로 세로로 나누었을때 픽셀이 바뀌는 지점이 0개인 글자들 -> ㅗ, ㅜ, ㅡ, ㅣ 얘네를 가지고 아래 if 문을 수행함.
+        if 중앙_세로선_픽셀_변경_갯수 == 0:
+
+            """ return 0 -> ㅡ , 1 -> ㅣ, 2 -> ㅗ, ㅜ"""
+            가로세로길이 = 가로세로길이비교(basic_image, basic_binary_image, point_dict)
+
+            # ㅡ
+            if 가로세로길이 == 0:
+                print('Eu')
+                contour_list.append(con)
+                hangul_list.append('Eu')
+            # ㅣ
+            elif 가로세로길이 == 1:
+                print('i')
+                contour_list.append(con)
+                hangul_list.append('i')
+            # ㅗ, ㅜ
+            elif 가로세로길이 == 2:
+
+                """ 아래선 기준으로 픽셀이 바뀌는 지점이 0개 -> ㅗ, 2개 -> ㅜ """
+                아랫선_픽셀_변경_갯수 = 아랫선가로로나누기(basic_image, basic_binary_image, point_dict)
+
+                # ㅗ
+                if 아랫선_픽셀_변경_갯수== 0:
+                    print('O')
+                    contour_list.append(con)
+                    hangul_list.append('O')
+                # ㅜ
+                elif 아랫선_픽셀_변경_갯수 == 2:
+                    print('u')
+                    contour_list.append(con)
+                    hangul_list.append('u')
+                else:
+                    print('0 - 2 - 잘못찾음')
+            else:
+                print('0 - 잘못찾음')
+
         # 중앙선을 기준으로 세로로 나누었을때 픽셀이 바뀌는 지점이 1개인 글자들 -> ㄱ, ㄴ, ㅛ, ㅈ, ㅊ, ㅛ, ㅠ 얘네를 가지고 아래 if 문을 수행함.
-        if 중앙_세로선_픽셀_변경_갯수 == 1:
+        elif 중앙_세로선_픽셀_변경_갯수 == 1:
             중앙_가로선_픽셀_변경_갯수 = 중앙선가로로나누기(basic_image, basic_binary_image, point_dict)
 
             """ 중앙선을 기준으로 가로로 나누면 픽셀이 바뀌는 지점이 1, 2, 4 개로 나누어진다. """
@@ -242,16 +355,16 @@ if __name__ == '__main__':
             if 중앙_가로선_픽셀_변경_갯수 == 1:
                 # 있으면 1
                 # 없으면 0
-                """ ㄱ, ㄴ 이 남은 상태에서 오른쪽 중앙 픽셀을 검사한다. 있다면 ㄱ / 없다면 ㄴ 이다. """
-                오른쪽중앙과아래사이픽셀여부 = 오른쪽중앙과아래사이픽셀검사(basic_image, basic_binary_image, point_dict)
+                """ ㄱ, ㄴ 이 남은 상태에서 중앙 상단 픽셀을 검사한다. 있다면 ㄱ / 없다면 ㄴ 이다. """
+                중앙상단픽셀여부 = 중앙상단픽셀검사(basic_image, basic_binary_image, point_dict)
 
-                # 오른쪽 중앙에 4픽셀에 검은색 픽셀이 있음 -> ㄱ
-                if 오른쪽중앙과아래사이픽셀여부 == 1:
+                # 중앙에 상단픽셀이 검은색이라면 -> ㄱ
+                if 중앙상단픽셀여부 == 1:
                    print('Giyeok')
                    contour_list.append(con)
                    hangul_list.append('Giyeok')
-                # 오른쪽 중앙에 4픽셀에 검은색 픽셀이 없음 -> ㄴ
-                elif 오른쪽중앙과아래사이픽셀여부 == 0:
+                # 중앙에 상단픽셀이 흰색이라면 -> ㄴ
+                elif 중앙상단픽셀여부 == 0:
                     print('Nieun')
                     contour_list.append(con)
                     hangul_list.append('Nieun')
@@ -266,18 +379,21 @@ if __name__ == '__main__':
                 가로선_0부터_중앙사이_픽셀_변경_갯수 = 가로선_0부터_중앙사이_세로로나누기(basic_image, basic_binary_image, point_dict)
 
                 # 제일 왼쪽 부분과 중간 사이 세로선을 나누었을때 픽셀 변경 지점 개수가 2개인 부분 - > ㅅ
+                # ㅅ
                 if 가로선_0부터_중앙사이_픽셀_변경_갯수 == 2:
                     print('Sieut')
                     contour_list.append(con)
                     hangul_list.append('Sieut')
 
                 # 제일 왼쪽 부분과 중간 사이 세로선을 나누었을때 픽셀 변경 지점 개수가 3개인 부분 - > ㅈ
+                # ㅈ
                 elif 가로선_0부터_중앙사이_픽셀_변경_갯수 == 3:
                     print('Tsiwt')
                     contour_list.append(con)
                     hangul_list.append('Tsiwt')
 
                 # 제일 왼쪽 부분과 중간 사이 세로선을 나누었을때 픽셀 변경 지점 개수가 4개인 부분 - > ㅊ
+                # ㅊ
                 elif 가로선_0부터_중앙사이_픽셀_변경_갯수 == 4:
                     print('Tshiwt')
                     contour_list.append(con)
@@ -298,45 +414,180 @@ if __name__ == '__main__':
                     hangul_list.append('yo')
                 # 잘못찾음
                 else:
-                    print('1 - 4 - 잘못찾음')
+                    """ 제일 아래부분을 가로로 선을 그엇을때 픽셀이 변경되는 지점의 개수가 4개인 부분 -> ㅠ , ㅈ, ㅅ """
+                    가로선_0부터_중앙사이_픽셀_변경_갯수 = 가로선_0부터_중앙사이_세로로나누기(basic_image, basic_binary_image, point_dict)
 
-                가로선_0부터_중앙사이_픽셀_변경_갯수 = 가로선_0부터_중앙사이_세로로나누기(basic_image, basic_binary_image, point_dict)
+                    # ㅠ
+                    if 가로선_0부터_중앙사이_픽셀_변경_갯수 == 1:
+                        print('yu')
+                        contour_list.append(con)
+                        hangul_list.append('yu')
 
-                # 제일 아래부분을 가로로 선을 그엇을때 픽셀이 변경되는 지점의 개수가 4개인 부분 -> ㅠ , ㅈ, ㅅ
-                if 가로선_0부터_중앙사이_픽셀_변경_갯수 == 1:
-                    print('u')
-                    contour_list.append(con)
-                    hangul_list.append('u')
+                    # ㅅ
+                    elif 가로선_0부터_중앙사이_픽셀_변경_갯수 == 2:
+                        print('Sieut')
+                        contour_list.append(con)
+                        hangul_list.append('Sieut')
+                    # ㅈ
+                    elif 가로선_0부터_중앙사이_픽셀_변경_갯수 == 3:
+                        print('Tsiwt')
+                        contour_list.append(con)
+                        hangul_list.append('Tsiwt')
 
-                elif 가로선_0부터_중앙사이_픽셀_변경_갯수 == 2:
-                    print('Sieut')
-                    contour_list.append(con)
-                    hangul_list.append('Sieut')
+                    # 잘못찾음
+                    else:
+                        print('1 - 4 - 잘못찾음')
 
-                elif 가로선_0부터_중앙사이_픽셀_변경_갯수 == 3:
-                    print('Tsiwt')
-                    contour_list.append(con)
-                    hangul_list.append('Tsiwt')
-
-                # 잘못찾음
-                else:
-                    print('1 - 4 - 잘못찾음')
-
+        # 중앙선을 기준으로 세로로 나누었을때 픽셀이 바뀌는 지점이 1개인 글자들 -> ㄷ, ㅇ, ㅍ, ㅁ, ㅏ, ㅓ 얘네를 가지고 아래 if 문을 수행함.
         elif 중앙_세로선_픽셀_변경_갯수 == 2:
-            pass
+            """ 중앙 상단에 픽셀이 있다면 1, 없다면 0 """
+            중앙상단픽셀여부 = 중앙상단픽셀검사(basic_image, basic_binary_image, point_dict)
 
+            # ㄷ, ㅇ, ㅍ, ㅁ
+            if 중앙상단픽셀여부 == 1:
+                """ 픽셀 변경 개수 0개 -> ㄷ, ㅁ, 2개 -> ㅇ, ㅍ"""
+                가장왼쪽세로선_픽셀_변경_갯수 = 가장왼쪽세로선으로나누기(basic_image, basic_binary_image, point_dict)
+
+                # ㄷ, ㅁ
+                if 가장왼쪽세로선_픽셀_변경_갯수 == 0:
+                    """ 오른쪽 중앙 픽셀 여부 / 있다 -> ㅁ , 없다 -> ㄷ """
+                    중앙오른쪽픽셀여부 = 중앙오른쪽픽셀검사(basic_image, basic_binary_image, point_dict)
+
+                    # ㅁ
+                    if 중앙오른쪽픽셀여부 == 1:
+                        print('Mieum')
+                        contour_list.append(con)
+                        hangul_list.append('Mieum')
+                    # ㄷ
+                    elif 중앙오른쪽픽셀여부 == 0:
+                        print('Digeut')
+                        contour_list.append(con)
+                        hangul_list.append('Digeut')
+                    else:
+                        print('2 - 1 - 0 - 잘못찾음')
+                # ㅇ, ㅍ
+                elif 가장왼쪽세로선_픽셀_변경_갯수 == 2:
+
+                    """ 왼쪽 상단 픽셀 여부 / 있다 -> ㅍ , 없다 -> ㅇ """
+                    오른쪽중앙픽셀여부 = 중앙오른쪽픽셀검사(basic_image, basic_binary_image, point_dict)
+
+                    # ㅍ
+                    if 오른쪽중앙픽셀여부 == 0:
+                        print('Pieub')
+                        contour_list.append(con)
+                        hangul_list.append('Pieub')
+                    # ㅇ
+                    elif 오른쪽중앙픽셀여부 == 1:
+                        print('Ieung')
+                        contour_list.append(con)
+                        hangul_list.append('Ieung')
+                    else:
+                        print('2 - 1 - 2 - 잘못찾음')
+
+
+                else:
+                    print('2 - 1 - 잘못찾음')
+
+            # ㅏ, ㅓ
+            elif 중앙상단픽셀여부 == 0:
+                """ 픽셀 변경 개수 0개 -> ㅏ, 2개 -> ㅓ"""
+                가장왼쪽세로선_픽셀_변경_갯수 = 가장왼쪽세로선으로나누기(basic_image, basic_binary_image, point_dict)
+
+                # ㅏ
+                if 가장왼쪽세로선_픽셀_변경_갯수 == 0:
+                    print('A')
+                    contour_list.append(con)
+                    hangul_list.append('A')
+                # ㅓ
+                elif 가장왼쪽세로선_픽셀_변경_갯수 == 2:
+                    print('Eo')
+                    contour_list.append(con)
+                    hangul_list.append('Eo')
+                else:
+                    print('2 - 0 - 잘못찾음음')
+
+            else:
+               print('2 - 잘못찾음')
+
+        # 중앙선을 기준으로 세로로 나누었을때 픽셀이 바뀌는 지점이 3개인 글자들 -> ㄱ, ㅂ, ㅋ 얘네를 가지고 아래 if 문을 수행함.
         elif 중앙_세로선_픽셀_변경_갯수 == 3:
-            pass
 
+            """ 픽셀변경 개수 0개 -> ㅂ, 1개 -> ㄱ, 3개 -> ㅋ"""
+            가장왼쪽세로선_픽셀_변경_갯수 = 가장왼쪽세로선으로나누기(basic_image, basic_binary_image, point_dict)
+            # ㅂ
+            if 가장왼쪽세로선_픽셀_변경_갯수 == 0:
+                print('Bieup')
+                contour_list.append(con)
+                hangul_list.append('Bieup')
+            # ㄱ
+            elif 가장왼쪽세로선_픽셀_변경_갯수 == 1 or 가장왼쪽세로선_픽셀_변경_갯수 == 2:
+                print('Giyeok')
+                contour_list.append(con)
+                hangul_list.append('Giyeok')
+            # ㅋ
+            elif 가장왼쪽세로선_픽셀_변경_갯수 == 3:
+                print('Kieuk')
+                contour_list.append(con)
+                hangul_list.append('Kieuk')
+            else:
+                print('3 - 잘못찾음')
+
+        # 중앙선을 기준으로 세로로 나누었을때 픽셀이 바뀌는 지점이 4개인 글자들 -> ㄹ, ㅌ, ㅑ, ㅕ 얘네를 가지고 아래 if 문을 수행함.
         elif 중앙_세로선_픽셀_변경_갯수 == 4:
-            pass
 
+            """ 중앙 상단의 픽셀을 검사하였을때, 있다면 -> ㄹ, ㅌ 없다면 ㅑ, ㅕ 이다"""
+            중앙상단픽셀여부 = 중앙상단픽셀검사(basic_image, basic_binary_image, point_dict)
+
+            # 중앙에 상단픽셀이 검은색이라면 -> ㄹ, ㅌ
+            if 중앙상단픽셀여부 == 1:
+
+                """ 글자의 가장 왼쪽을 기준으로 세로선을 잘랐을때 픽셀이 바뀌는 지점을 체크한다. 2개 -> ㄹ, 0개 ㅌ """
+                가장왼쪽세로선_픽셀_변경_갯수 = 가장왼쪽세로선으로나누기(basic_image, basic_binary_image, point_dict)
+
+                # ㅌ
+                if 가장왼쪽세로선_픽셀_변경_갯수 == 0:
+                    print('Tieut')
+                    contour_list.append(con)
+                    hangul_list.append('Tieut')
+                # ㄹ
+                elif 가장왼쪽세로선_픽셀_변경_갯수 == 2:
+                    print('Rieul')
+                    contour_list.append(con)
+                    hangul_list.append('Rieul')
+                else:
+                    print('4 - 1 - 잘못찾음')
+
+            # 중앙에 상단픽셀이 흰색이라면 -> ㅑ, ㅕ
+            elif 중앙상단픽셀여부 == 0:
+                """ 값이 있다면 ㅑ, 없다면 ㅕ """
+                왼쪽중앙픽셀여부 = 왼쪽중앙픽셀만검사(basic_image, basic_binary_image, point_dict)
+
+                # ㅑ
+                if 왼쪽중앙픽셀여부 == 1:
+                    print('ya')
+                    contour_list.append(con)
+                    hangul_list.append('ya')
+                # ㅕ
+                elif 왼쪽중앙픽셀여부 == 0:
+                    print('yeo')
+                    contour_list.append(con)
+                    hangul_list.append('yeo')
+                else:
+                    print('4 - 0 - 잘못찾음')
+
+            # 잘못찾음
+            else:
+                print('4 - 잘못찾음')
+
+        # 중앙선을 기준으로 세로로 나누었을때 픽셀이 바뀌는 지점이 4개인 글자들 -> ㅋ 얘네를 가지고 아래 if 문을 수행함.
+        elif 중앙_세로선_픽셀_변경_갯수 == 5:
+            print('Kieuk')
+            contour_list.append(con)
+            hangul_list.append('Kieuk')
 
 
 
     """ ↓↓↓↓ 찾은 글자 네모영역 그리기 ↓↓↓↓"""
-
-
     for i, find_contour_value in enumerate(contour_list):
         x_min = 9999
         x_max = 0
