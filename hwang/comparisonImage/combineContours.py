@@ -35,6 +35,7 @@ def findMinMaxPoint(pointList):
     
     return (minX, minY, maxX, maxY)
 
+# 주변 contour 묶는 메소드, 종횡비가 0.7 ~ 1.286 안에 들어오는 contour만 묶는다.
 def findFontContour(imgFile):
     imgStandard = cv.imread(imgFile, cv.IMREAD_COLOR)
     imgGrayscale = cv.cvtColor(imgStandard, cv.COLOR_BGR2GRAY)
@@ -48,15 +49,15 @@ def findFontContour(imgFile):
     # 최종적으로 인정된 font Contour 좌표(x, y, w, h)
     fontContour = []
 
-    for i in range(len(contours)):
+    for cnt in contours:
         # contours로 찾아낸 물체
-        cnt = contours[i]
         x, y, w, h = cv.boundingRect(cnt)
         # 찾아낸 영역의 x,y,w,h값 저장
         boxPoint.append(cv.boundingRect(cnt))
 
         # 테투리로 영역 설정하기
         # cv.drawContours(imgStandard, [cnt], 0, (0, 255, 0), 2)
+
         # 사각형으로 영역 설정하기 (녹색)
         # cv.rectangle(imgStandard, (x, y), (x + w, y + h), (0, 255, 0), 1)
         # setLabel(imgStandard, str(rectangleCount), cnt)
@@ -106,8 +107,9 @@ def findFontContour(imgFile):
                 y = boxPoint[i][1] - (boxPoint[i][3] * 2)
                 w = boxPoint[i][2]
                 h = boxPoint[i][3] + (boxPoint[i][3] * 4)
+            # 일반적인 상황일 때
             else:
-                # 주변 합쳐야할 영역
+                # 주변 합쳐야할 영역 (상, 하, 좌, 우 전부 검사한다.)
                 x = boxPoint[i][0] - distanceRange
                 y = boxPoint[i][1] - distanceRange
                 w = boxPoint[i][2] + (distanceRange * 2)
@@ -141,7 +143,7 @@ def findFontContour(imgFile):
             mWidth = minMaxPoint[2] - minMaxPoint[0]
             mHeight = minMaxPoint[3] - minMaxPoint[1]
 
-            mWHRate = round((mWidth/mHeight), 2)
+            mWHRate = round((mWidth/mHeight), 3)
             if mWHRate >= 0.7 and mWHRate <= 1.286:
                 # 인정된 contour position은 realContourPosition에 저장한다.
                 for temp in tempPosition:
@@ -167,7 +169,7 @@ def findFontContour(imgFile):
 
                                 fontContourPosition.append(l)
                 
-                cv.rectangle(imgStandard, (minMaxPoint[0], minMaxPoint[1]), (minMaxPoint[2], minMaxPoint[3]), (50,100,150), 1)
+                cv.rectangle(imgStandard, (minMaxPoint[0], minMaxPoint[1]), (minMaxPoint[2], minMaxPoint[3]), (0,100,200), 1)
                 fontContour.append((minMaxPoint[0], minMaxPoint[1], minMaxPoint[2] - minMaxPoint[0], minMaxPoint[3] - minMaxPoint[1]))
                 # print("realContourPosition ", realContourPosition)
                 # cv.imshow('result', imgStandard)
@@ -182,13 +184,13 @@ def findFontContour(imgFile):
     for box in boxPoint:
         if box[2] / box[3] >= 0.7 and box[2] / box[3] <= 1.286:
             fontContour.append((box[0], box[1], box[2], box[3]))
-            cv.rectangle(imgStandard, (box[0], box[1]), (box[0] + box[2], box[1] + box[3]), (50,100,150), 1)
+            cv.rectangle(imgStandard, (box[0], box[1]), (box[0] + box[2], box[1] + box[3]), (0,100,200), 1)
 
     cv.imshow('result', imgStandard)
     cv.waitKey(0)
 
     return fontContour
 
-standardFile = 'hwang/imgSet/test_comparison2.png'
+standardFile = 'hwang/imgSet/test_comparison5.png'
 contourList = findFontContour(standardFile)
 print(contourList)
