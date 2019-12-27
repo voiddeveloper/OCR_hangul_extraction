@@ -11,6 +11,7 @@ randomCount = random.randrange(1, size)
 tempMaxRate = 0
 tempMinRate = 1
 
+# standard 폴더 내의 모든 이미지를 체크한다.
 for fname in images:    
     imgStandard = cv.imread(fname)
     imgGrayscale = cv.cvtColor(imgStandard, cv.COLOR_BGR2GRAY)
@@ -65,6 +66,6 @@ for fname in images:
     #     tempMaxRate = whRate
     ###############################################
     
-    cv.imshow('imgCut', imgCut)
-    cv.waitKey(0)
-    
+    # cv.imshow('imgCut', imgCut)
+    # cv.waitKey(0)
+
