@@ -4,6 +4,7 @@ import random
 
 #############################################################################################
 # 폰트 이미지를 읽고, 해당 폰트를 n등분하여 선을 긋는 프로그램
+# 폰트 이미지의 종횡비도 구한다.
 #############################################################################################
 images = glob.glob("C:\\Users\\narun\\Desktop\\malgun\\*.*")
 count = 0
@@ -13,9 +14,9 @@ tempMaxRate = 0
 tempMinRate = 1
 
 for fname in images:
-    count += 1
-    if count < randomCount and count > randomCount - 5:
-    # if count < size:
+    # count += 1
+    # if count < randomCount and count > randomCount - 5:
+    if count < size:
         
         imgStandard = cv.imread(fname)
         imgResize = cv.resize(imgStandard, (0, 0), fx = 1, fy = 1, interpolation= cv.INTER_AREA)
@@ -59,11 +60,16 @@ for fname in images:
 
         ###############################################
         # 종횡비 구하기
-        # whRate = round(width/height, 2)        
-        # if tempMinRate > whRate:
-        #     tempMinRate = whRate
-        # if tempMaxRate < whRate:
-        #     tempMaxRate = whRate
+        # 맑은 고딕 기준
+        # 종횡비 세로가 가장 긴 비율 (0.7 (width / height))
+        # 해당 글자 : 냬, 랚, 럑, 렦, 릮
+        # 종횡비 가로가 가장 긴 비율 (1.286 (width / height))
+        # 해당 글자 : 뚀, 쬬
+        whRate = round(width/height, 3)        
+        if tempMinRate > whRate:
+            tempMinRate = whRate
+        if tempMaxRate < whRate:
+            tempMaxRate = whRate
         ###############################################
         # n등분해서 선 그리기
         # divisionCount = 3
@@ -75,6 +81,7 @@ for fname in images:
         #             if i == 1:
         #                 cv.line(imgResize, (0, j * int(height/divisionCount)), (width, j * int(height/divisionCount)), (0, 0, 255), 2)
         ###############################################
-
-        cv.imshow('imgCut', imgResize)
-        cv.waitKey(0)
+        
+        # cv.imshow('imgCut', imgResize)
+        # cv.waitKey(0)
+print(tempMinRate, tempMaxRate)
