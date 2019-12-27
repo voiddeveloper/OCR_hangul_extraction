@@ -190,4 +190,5 @@ def findFontContour(imgFile):
     return fontContour
 
 standardFile = 'hwang/imgSet/test_comparison2.png'
-print(findFontContour(standardFile))
+contourList = findFontContour(standardFile)
+print(contourList)
