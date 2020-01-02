@@ -104,9 +104,9 @@ def findFontContour(imgFile):
             elif whRate >= 10:
                 # 주변 합쳐야할 영역 (위 아래로만 검사한다. 위 아래폭을 좀 더 크게 잡는다.)
                 x = boxPoint[i][0]
-                y = boxPoint[i][1] - (boxPoint[i][3] * 2)
+                y = boxPoint[i][1] - (boxPoint[i][3] * 3)
                 w = boxPoint[i][2]
-                h = boxPoint[i][3] + (boxPoint[i][3] * 4)
+                h = boxPoint[i][3] + (boxPoint[i][3] * 6)
             # 일반적인 상황일 때
             else:
                 # 주변 합쳐야할 영역 (상, 하, 좌, 우 전부 검사한다.)
@@ -191,6 +191,6 @@ def findFontContour(imgFile):
 
     return fontContour
 
-standardFile = 'hwang/imgSet/test_comparison5.png'
+standardFile = 'hwang/imgSet/test_comparison9.png'
 contourList = findFontContour(standardFile)
 print(contourList)
