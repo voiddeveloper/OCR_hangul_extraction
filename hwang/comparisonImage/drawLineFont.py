@@ -1,6 +1,7 @@
 import cv2 as cv
 import glob
 import random
+import matplotlib.pyplot 
 
 #############################################################################################
 # 폰트 이미지를 읽고, 해당 폰트를 n등분하여 선을 긋는 프로그램
@@ -14,10 +15,13 @@ tempMaxRate = 0
 tempMinRate = 1
 
 for fname in images:
-    # count += 1
+    count += 1
     # if count < randomCount and count > randomCount - 5:
-    if count < size:
-        
+    # '운' = 종횡비 : 1.0
+    # '훈' = 종횡비 : 1.0
+    if fname == 'C:\\Users\\narun\\Desktop\\malgun\\10953.png':
+    # if count < size:
+        print(fname)
         imgStandard = cv.imread(fname)
         imgResize = cv.resize(imgStandard, (0, 0), fx = 1, fy = 1, interpolation= cv.INTER_AREA)
         
@@ -65,7 +69,8 @@ for fname in images:
         # 해당 글자 : 냬, 랚, 럑, 렦, 릮
         # 종횡비 가로가 가장 긴 비율 (1.286 (width / height))
         # 해당 글자 : 뚀, 쬬
-        whRate = round(width/height, 3)        
+        whRate = round(width/height, 3)
+        print(whRate)
         if tempMinRate > whRate:
             tempMinRate = whRate
         if tempMaxRate < whRate:
@@ -82,6 +87,6 @@ for fname in images:
         #                 cv.line(imgResize, (0, j * int(height/divisionCount)), (width, j * int(height/divisionCount)), (0, 0, 255), 2)
         ###############################################
         
-        # cv.imshow('imgCut', imgResize)
-        # cv.waitKey(0)
+        cv.imshow('imgCut', imgResize)
+        cv.waitKey(0)
 print(tempMinRate, tempMaxRate)
