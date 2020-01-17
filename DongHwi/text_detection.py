@@ -33,8 +33,8 @@ def colorFilter(img_color, color_dict):
         result = cv2.bitwise_and(result, result, mask=mask)
 
     # if color == 'black':
-    # cv2.imshow(str(color_dict['color'])+str(color_dict['s']) + str(' , ')+str(color_dict['v']), mask)
-    # cv2.waitKey(0)
+    #     cv2.imshow(str(color_dict['color'])+str(color_dict['s']) + str(' , ')+str(color_dict['v']), mask)
+    #     cv2.waitKey(0)
 
     return mask
 
@@ -167,10 +167,10 @@ if __name__ == '__main__':
     v_range = 20
     filter_variable['width_limit_pixel'] = 10
     filter_variable['height_limit_pixel'] = 10
-    filter_variable['pixel_change_count'] = 20
+    filter_variable['pixel_change_count'] = 30
 
     # rgb 이미지 불러오기
-    img_color = cv2.imread('test4.png')
+    img_color = cv2.imread('rr.png')
 
     # cv2.imshow('image', img_color)
     # cv2.waitKey(0)
