@@ -148,22 +148,6 @@ if __name__ == '__main__':
 
     start_time = time.time()
 
-    # rgb 이미지 불러오기
-    img_color = cv2.imread('test1.png')
-
-    # cv2.imshow('image', img_color)
-    # cv2.waitKey(0)
-
-    h, w, c = img_color.shape
-
-    print(h, w, c)
-
-    # rgb -> hsv 변환
-    img_hsv = cv2.cvtColor(img_color, cv2.COLOR_RGB2HSV)
-
-    # 색 필터 적용후 이미지 리스트
-    result_filter_list = []
-
     """
     # h, v
     s_range : s의 범위 / int
@@ -186,12 +170,27 @@ if __name__ == '__main__':
     filter_variable['width_limit_pixel'] = 10
     filter_variable['height_limit_pixel'] = 10
 
+    # rgb 이미지 불러오기
+    img_color = cv2.imread('test1.png')
+
+    # cv2.imshow('image', img_color)
+    # cv2.waitKey(0)
+
+    h, w, c = img_color.shape
+
+    print(h, w, c)
+
+    # rgb -> hsv 변환
+    img_hsv = cv2.cvtColor(img_color, cv2.COLOR_RGB2HSV)
+
+    # 색 필터 적용후 이미지 리스트
+    result_filter_list = []
 
     """ 검은색 """
     color_dict = {}
     color_dict['color'] = 'black'
     color_dict['lower_range'] = [0, 0, 0]
-    color_dict['upper_range'] = [179, 0, 0]
+    color_dict['upper_range'] = [179, 255, 50]
     color_dict['s'] = 0
     color_dict['v'] = 0
     black_filter_result_image = colorFilter(img_color, color_dict)
@@ -210,7 +209,12 @@ if __name__ == '__main__':
     for s in range(s_range):
         for v in range(v_range):
 
-            if s * (256 / s_range) < 50 and v * (256 / v_range) > 180:
+            # 하얀색 필터가 겹치면 제외
+            if s * (256 / s_range) < 50 and v * (256 / v_range) < 180:
+                continue
+
+            # 검은색 필터가 겹치면 제외
+            if s * (256 / s_range) < 255 and v * (256 / v_range) < 50:
                 continue
 
             # 색상 필터 적용해서 이미지에서 원하는 색을 뽑기
