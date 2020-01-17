@@ -1,6 +1,9 @@
+""" 여러 색이 있는 이미지에서 같은 계열의 색을 찾기"""
+
 import cv2
 import numpy as np
 import time
+
 
 # 색 필터 - 이진화 이미지 반환
 def colorFilter(img_color, color_dict):
@@ -30,8 +33,8 @@ def colorFilter(img_color, color_dict):
         result = cv2.bitwise_and(result, result, mask=mask)
 
     # if color == 'black':
-    #     cv2.imshow(str(color_dict['color'])+str(color_dict['s']) + str(' , ')+str(color_dict['v']), mask)
-    #     cv2.waitKey(0)
+    # cv2.imshow(str(color_dict['color'])+str(color_dict['s']) + str(' , ')+str(color_dict['v']), mask)
+    # cv2.waitKey(0)
 
     return mask
 
@@ -87,11 +90,6 @@ def findMinMaxPoint(bi_image, image, contour, hierarchy, filter_variable):
             continue
         else:
 
-            """
-            2번 필터 : 네모영역 안에 픽셀양 체크
-            2번 필터를 추가하면 조금 좋은 결과를 내놓음. 
-            하지만 2번 필터를 추가 하나 안하나 비슷한거 같아서 일단 주석처리 해놓음 2020 -01 -07 / 
-            시간, 정확도면에서 약간 오차가 있음 /"""
             # """
             # 2번 필터
             # 네모영역안의 픽셀을 검사해서 15~50% 미만이면 글자로 판단 그리고 95%이상이면 글자로 판단( ㅡ, ㅣ ), 그렇지 않으면 잡음으로 처리한다.
@@ -108,11 +106,14 @@ def findMinMaxPoint(bi_image, image, contour, hierarchy, filter_variable):
             #
             # # 픽셀양이 10~50% 이하이면 네모영역 그림
             # if (pixel_sum * 100 <= 55 and pixel_sum * 100 >= 10) or pixel_sum * 100 > 95:
+            #
+            # """
+            # 3번 필터
+            # 정사각형 제외 - 맑은고딕은 네모꼴임 그래서 자음 모음이 정사각형 모양이 나올 수 없음
+            # """
+            # if (x_max - x_min) / (y_max - y_min) == 1.0:
+            #     continue
 
-            """
-            3번 필터
-            컨투어 안에서 색상이 바뀌는 횟수
-            """
             #픽셀의 색을 넣을 리스트
             ll=[]
             # 이미지와 동일한 크기의 검은색 이미지를 만든다
@@ -136,8 +137,7 @@ def findMinMaxPoint(bi_image, image, contour, hierarchy, filter_variable):
                 op_draw = cv2.drawContours(image ,contour,i,color=(0,255,0),thickness=1)
                 op_draw = cv2.rectangle(image, (x_min, y_min), (x_max, y_max), (0, 0, 255), 1)
                 cv2.imshow('sdf', op_draw)
-                # cv2.waitKey(0)
-                # cv2.destroyAllWindows()
+
                 # 모든 필터에 통과한다면 min_max_list에 네모영역 좌표를 추가한다.
                 min_max_list.append([x_min, y_min, x_max, y_max])
 
@@ -148,29 +148,29 @@ if __name__ == '__main__':
     start_time = time.time()
 
     """
-    # h, v
-    s_range : s 범위 / int
-    v_range : v 범위 / int 
+       # h, v
+       s_range : s 범위 / int
+       v_range : v 범위 / int 
+       
+       # 컨투어 안에서 색상이 바뀌는 횟수 / int
+       filter_variable['pixel_change_count']
+       
+       # 가로픽셀이 10 이하인건 제외
+       filter_variable['width_limit_pixel']
     
-    # 컨투어 안에서 색상이 바뀌는 횟수 / int
-    filter_variable['pixel_change_count']
-    
-    # 가로픽셀이 10 이하인건 제외
-    filter_variable['width_limit_pixel']
-
-    # 세로픽셀이 10 이하인건 제외
-    filter_variable['height_limit_pixel']
-    """
+       # 세로픽셀이 10 이하인건 제외
+       filter_variable['height_limit_pixel']
+       """
 
     filter_variable = {}
     s_range = 20
     v_range = 20
     filter_variable['width_limit_pixel'] = 10
     filter_variable['height_limit_pixel'] = 10
-    filter_variable['pixel_change_count'] = 10
+    filter_variable['pixel_change_count'] = 20
 
     # rgb 이미지 불러오기
-    img_color = cv2.imread('test1.png')
+    img_color = cv2.imread('test4.png')
 
     # cv2.imshow('image', img_color)
     # cv2.waitKey(0)
@@ -181,6 +181,7 @@ if __name__ == '__main__':
 
     # rgb -> hsv 변환
     img_hsv = cv2.cvtColor(img_color, cv2.COLOR_RGB2HSV)
+    img_yuv = cv2.cvtColor(img_color, cv2.COLOR_RGB2YUV)
 
     # 색 필터 적용후 이미지 리스트
     result_filter_list = []
@@ -192,7 +193,7 @@ if __name__ == '__main__':
     color_dict['upper_range'] = [179, 255, 50]
     color_dict['s'] = 0
     color_dict['v'] = 0
-    black_filter_result_image = colorFilter(img_color, color_dict)
+    black_filter_result_image = colorFilter(img_hsv, color_dict)
     result_filter_list.append(black_filter_result_image)
 
     """ 하얀색 """
@@ -202,18 +203,18 @@ if __name__ == '__main__':
     color_dict['upper_range'] = [179, 50, 255]
     color_dict['s'] = 0
     color_dict['v'] = 0
-    white_filter_result_image = colorFilter(img_color, color_dict)
+    white_filter_result_image = colorFilter(img_hsv, color_dict)
     result_filter_list.append(white_filter_result_image)
 
     for s in range(s_range):
         for v in range(v_range):
 
             # 하얀색 필터가 겹치면 제외
-            # if s * (256 / s_range) < 50 and v * (256 / v_range) > 180:
-            #     continue
+            if s * (256 / s_range) < 50 and v * (256 / v_range) > 180:
+                continue
 
-            # 하얀색, 검은색 필터가 겹치면 제외
-            if (s * (256 / s_range) < 255 and v * (256 / v_range) < 50) or (s * (256 / s_range) < 50 and v * (256 / v_range) > 180):
+            # 검은색 필터가 겹치면 제외
+            if s * (256 / s_range) < 255 and v * (256 / v_range) < 50:
                 continue
 
             # 색상 필터 적용해서 이미지에서 원하는 색을 뽑기
@@ -221,15 +222,15 @@ if __name__ == '__main__':
             color_dict = {}
             color_dict['color'] = 'red'
             color_dict['lower_range'] = [170, s * (256 / s_range), v * (256 / v_range)]
-            color_dict['upper_range'] = [179, s * (256 / s_range) + (256 / s_range),
+            color_dict['upper_range'] = [180, s * (256 / s_range) + (256 / s_range),
                                          v * (256 / v_range) + (256 / v_range)]
-            color_dict['lower_range1'] = [1, s * (256 / s_range), v * (256 / v_range)]
+            color_dict['lower_range1'] = [0, s * (256 / s_range), v * (256 / v_range)]
             color_dict['upper_range1'] = [9, s * (256 / s_range) + (256 / s_range),
                                           v * (256 / v_range) + (256 / v_range)]
             color_dict['s'] = s * (256 / s_range)
             color_dict['v'] = v * (256 / v_range)
 
-            red_filter_result_image = colorFilter(img_color, color_dict)
+            red_filter_result_image = colorFilter(img_hsv, color_dict)
             result_filter_list.append(red_filter_result_image)
 
             """ 주황색 """
@@ -240,7 +241,7 @@ if __name__ == '__main__':
                                          v * (256 / v_range) + (256 / v_range)]
             color_dict['s'] = s * (256 / s_range)
             color_dict['v'] = v * (256 / v_range)
-            orange_filter_result_image = colorFilter(img_color, color_dict)
+            orange_filter_result_image = colorFilter(img_hsv, color_dict)
             result_filter_list.append(orange_filter_result_image)
 
             """ 노란색 """
@@ -251,7 +252,7 @@ if __name__ == '__main__':
                                          v * (256 / v_range) + (256 / v_range)]
             color_dict['s'] = s * (256 / s_range)
             color_dict['v'] = v * (256 / v_range)
-            yellow_filter_result_image = colorFilter(img_color, color_dict)
+            yellow_filter_result_image = colorFilter(img_hsv, color_dict)
             result_filter_list.append(yellow_filter_result_image)
 
             """ 초록색 """
@@ -262,7 +263,7 @@ if __name__ == '__main__':
                                          v * (256 / v_range) + (256 / v_range)]
             color_dict['s'] = s * (256 / s_range)
             color_dict['v'] = v * (256 / v_range)
-            green_filter_result_image = colorFilter(img_color, color_dict)
+            green_filter_result_image = colorFilter(img_hsv, color_dict)
             result_filter_list.append(green_filter_result_image)
 
             """ 연초록하늘색 """
@@ -273,7 +274,7 @@ if __name__ == '__main__':
                                          v * (256 / v_range) + (256 / v_range)]
             color_dict['s'] = s * (256 / s_range)
             color_dict['v'] = v * (256 / v_range)
-            skyblue_filter_result_image = colorFilter(img_color, color_dict)
+            skyblue_filter_result_image = colorFilter(img_hsv, color_dict)
             result_filter_list.append(skyblue_filter_result_image)
 
             """ 파란색 """
@@ -284,7 +285,7 @@ if __name__ == '__main__':
                                          v * (256 / v_range) + (256 / v_range)]
             color_dict['s'] = s * (256 / s_range)
             color_dict['v'] = v * (256 / v_range)
-            blue_filter_result_image = colorFilter(img_color, color_dict)
+            blue_filter_result_image = colorFilter(img_hsv, color_dict)
             result_filter_list.append(blue_filter_result_image)
 
             """ 보라색 """
@@ -295,7 +296,7 @@ if __name__ == '__main__':
                                          v * (256 / v_range) + (256 / v_range)]
             color_dict['s'] = s * (256 / s_range)
             color_dict['v'] = v * (256 / v_range)
-            purple_filter_result_image = colorFilter(img_color, color_dict)
+            purple_filter_result_image = colorFilter(img_hsv, color_dict)
             result_filter_list.append(purple_filter_result_image)
 
     """ 
