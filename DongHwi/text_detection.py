@@ -29,7 +29,7 @@ def colorFilter(img_color, color_dict):
         mask = cv2.inRange(image, lower1, upper1)
         result = cv2.bitwise_and(result, result, mask=mask)
 
-    # if color == 'orange':
+    # if color == 'black':
     #     cv2.imshow(str(color_dict['color'])+str(color_dict['s']) + str(' , ')+str(color_dict['v']), mask)
     #     cv2.waitKey(0)
 
@@ -133,7 +133,6 @@ def findMinMaxPoint(bi_image, image, contour, hierarchy, filter_variable):
             #중복을 제거해주는 부분
             pixel_change_count = list(set([tuple(set(ll[0])) for ll[0] in ll[0]]))
             if len(pixel_change_count) <= filter_variable['pixel_change_count']:
-                ddfd = cv2.imread('test1.png')
                 op_draw = cv2.drawContours(image ,contour,i,color=(0,255,0),thickness=1)
                 op_draw = cv2.rectangle(image, (x_min, y_min), (x_max, y_max), (0, 0, 255), 1)
                 cv2.imshow('sdf', op_draw)
@@ -150,7 +149,7 @@ if __name__ == '__main__':
 
     """
     # h, v
-    s_range : s의 범위 / int
+    s_range : s 범위 / int
     v_range : v 범위 / int 
     
     # 컨투어 안에서 색상이 바뀌는 횟수 / int
@@ -164,11 +163,11 @@ if __name__ == '__main__':
     """
 
     filter_variable = {}
-    s_range = 10
-    v_range = 10
-    filter_variable['pixel_change_count'] = 10
+    s_range = 20
+    v_range = 20
     filter_variable['width_limit_pixel'] = 10
     filter_variable['height_limit_pixel'] = 10
+    filter_variable['pixel_change_count'] = 10
 
     # rgb 이미지 불러오기
     img_color = cv2.imread('test1.png')
@@ -210,11 +209,11 @@ if __name__ == '__main__':
         for v in range(v_range):
 
             # 하얀색 필터가 겹치면 제외
-            if s * (256 / s_range) < 50 and v * (256 / v_range) < 180:
-                continue
+            # if s * (256 / s_range) < 50 and v * (256 / v_range) > 180:
+            #     continue
 
-            # 검은색 필터가 겹치면 제외
-            if s * (256 / s_range) < 255 and v * (256 / v_range) < 50:
+            # 하얀색, 검은색 필터가 겹치면 제외
+            if (s * (256 / s_range) < 255 and v * (256 / v_range) < 50) or (s * (256 / s_range) < 50 and v * (256 / v_range) > 180):
                 continue
 
             # 색상 필터 적용해서 이미지에서 원하는 색을 뽑기
