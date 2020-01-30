@@ -57,7 +57,7 @@ def findContour(image):
 
 
 # 컨투어 x,y 최소, 최대 값 찾기
-def findMinMaxPoint(bi_image, image, contour, hierarchy, filter_variable):
+def findMinMaxPoint(bi_image, image, contour, hierarchy, filter_variable, color_dict_info):
     min_max_list = []
 
     global img_number
@@ -158,13 +158,13 @@ def findMinMaxPoint(bi_image, image, contour, hierarchy, filter_variable):
                     else:
                         nextPoint = hierarchy[0][nextPoint][3]
                         parentCount += 1
-                
+
                 # print ('parentCount 값 : ', parentCount)
 
                 # 짝수번의 부모가 있었다면 이 contour 영역은 계산해봐야 하기 때문에, 흰색으로 칠한다.
                 if parentCount%2 == 0:
                     cv2.drawContours(cimg,contour,i,color=(255,255,255),thickness=-1)
-            
+
             # 부모가 아예 없다면 최상단 contour 이기 때문에, 흰색으로 칠한다.
             else:
                 # print ('parentCount 값 : ', parentCount)
@@ -172,11 +172,11 @@ def findMinMaxPoint(bi_image, image, contour, hierarchy, filter_variable):
             ###########################################################################
             # 기존 구 코드는 주석 처리 해놓음, 위에 조건문을 주석처리한 다음, 아래줄의 주석을 해제하면 기존의 모든 contour를 흰색으로 칠하는 과정으로 돌아갈 수 있음.
             # cv2.drawContours(cimg,contour,i,color=(255,255,255),thickness=-1)
-            
+
             # 색 필터를 뚫고 나온 contour 확인용 디버그
             # cv2.imshow('test1', cimg)
             # cv2.waitKey(0)
-            
+
             #hierarchy에 해당 컨투어의 인덱스를 포함하는것 모두 검색
             index,position=np.where(hierarchy[0]==i)
             for n in range(len(index)):
@@ -227,28 +227,32 @@ def findMinMaxPoint(bi_image, image, contour, hierarchy, filter_variable):
                 pixel_change_count = list(set([tuple(set(ll[0])) for ll[0] in ll[0]]))
                 if len(pixel_change_count) <= filter_variable['pixel_change_count']:
                     # op_draw = cv2.drawContours(image ,contour,i,color=(0,255,0),thickness=1)
-                    op_draw = cv2.rectangle(image, (x_min, y_min), (x_max, y_max), (0, 0, 255), 1)
+                    # op_draw = cv2.rectangle(image, (x_min, y_min), (x_max, y_max), (0, 0, 255), 1)
                     # cv2.imshow('sdf', op_draw)
                     # cv2.imshow('test', cimg)
                     # cv2.waitKey(0)
-                    if y_min - 5 > 0 and x_min - 5 > 0:
-                        cimg = cimg[y_min - 5:y_max + 5, x_min - 5:x_max + 5]
-                        
-                    else:
-                        # print(y_min, x_min)
-                        cimg = cimg[y_min:y_max + 5, x_min:x_max + 5]
-                        
-                    cv2.imwrite("hwang/resultFolder/" + str(img_number) + ".png", cimg)
+
+                    cimg = cimg[y_min:y_max+1, x_min:x_max+1]
+
+                    file_name = "_color_" + str(color_dict_info['color']) + \
+                                 "_s_range_" + str(color_dict_info['s_range']) + \
+                                 "_v_range_" + str(color_dict_info['v_range']) + \
+                                 "_count_" + str(color_dict_info['pixel_change_count'])
+
+                    cv2.imwrite("resultFolder/" + str(img_number) + "_" + file_name + ".png", cimg)
                     img_number += 1
 
+
                     # 모든 필터를 통과한 후, 최종적으로 저장할 결과물을 확인하는 디버그
-                    cv2.imshow('test', cimg)
-                    cv2.waitKey(0)
+                    # cv2.imshow('test', cimg)
+                    # cv2.waitKey(0)
+                    # cv2.destroyAllWindows()
 
                     # 모든 필터에 통과한다면 min_max_list에 네모영역 좌표를 추가한다.
-                    min_max_list.append([x_min, y_min, x_max, y_max])
+                    min_max_list.append([x_min, y_min, x_max+1, y_max+1])
 
     return min_max_list
+
 
 if __name__ == '__main__':
 
@@ -272,12 +276,15 @@ if __name__ == '__main__':
     filter_variable = {}
     s_range = 20
     v_range = 20
-    filter_variable['width_limit_pixel'] = 10
-    filter_variable['height_limit_pixel'] = 10
-    filter_variable['pixel_change_count'] = 30
+    width_limit_pixel = 5
+    height_limit_pixel = 5
+    pixel_change_count = 30
+    filter_variable['width_limit_pixel'] = width_limit_pixel
+    filter_variable['height_limit_pixel'] = height_limit_pixel
+    filter_variable['pixel_change_count'] = pixel_change_count
 
     # rgb 이미지 불러오기
-    img_color = cv2.imread('hwang/imgSet/test1.png')
+    img_color = cv2.imread('test1.png')
 
     # cv2.imshow('image', img_color)
     # cv2.waitKey(0)
@@ -300,8 +307,13 @@ if __name__ == '__main__':
     color_dict['upper_range'] = [179, 255, 50]
     color_dict['s'] = 0
     color_dict['v'] = 0
+    color_dict['s_range'] = s_range
+    color_dict['v_range'] = v_range
+    color_dict['width_limit_pixel'] = width_limit_pixel
+    color_dict['height_limit_pixel'] = height_limit_pixel
+    color_dict['pixel_change_count'] = pixel_change_count
     black_filter_result_image = colorFilter(img_color, color_dict)
-    result_filter_list.append(black_filter_result_image)
+    result_filter_list.append([black_filter_result_image, color_dict])
 
     """ 하얀색 """
     color_dict = {}
@@ -310,8 +322,13 @@ if __name__ == '__main__':
     color_dict['upper_range'] = [179, 50, 255]
     color_dict['s'] = 0
     color_dict['v'] = 0
+    color_dict['s_range'] = s_range
+    color_dict['v_range'] = v_range
+    color_dict['width_limit_pixel'] = width_limit_pixel
+    color_dict['height_limit_pixel'] = height_limit_pixel
+    color_dict['pixel_change_count'] = pixel_change_count
     white_filter_result_image = colorFilter(img_color, color_dict)
-    result_filter_list.append(white_filter_result_image)
+    result_filter_list.append([white_filter_result_image, color_dict])
 
     for s in range(s_range):
         for v in range(v_range):
@@ -336,9 +353,14 @@ if __name__ == '__main__':
                                           v * (256 / v_range) + (256 / v_range)]
             color_dict['s'] = s * (256 / s_range)
             color_dict['v'] = v * (256 / v_range)
+            color_dict['s_range'] = s_range
+            color_dict['v_range'] = v_range
+            color_dict['width_limit_pixel'] = width_limit_pixel
+            color_dict['height_limit_pixel'] = height_limit_pixel
+            color_dict['pixel_change_count'] = pixel_change_count
 
             red_filter_result_image = colorFilter(img_color, color_dict)
-            result_filter_list.append(red_filter_result_image)
+            result_filter_list.append([red_filter_result_image, color_dict])
 
             """ 주황색 """
             color_dict = {}
@@ -348,8 +370,13 @@ if __name__ == '__main__':
                                          v * (256 / v_range) + (256 / v_range)]
             color_dict['s'] = s * (256 / s_range)
             color_dict['v'] = v * (256 / v_range)
+            color_dict['s_range'] = s_range
+            color_dict['v_range'] = v_range
+            color_dict['width_limit_pixel'] = width_limit_pixel
+            color_dict['height_limit_pixel'] = height_limit_pixel
+            color_dict['pixel_change_count'] = pixel_change_count
             orange_filter_result_image = colorFilter(img_color, color_dict)
-            result_filter_list.append(orange_filter_result_image)
+            result_filter_list.append([orange_filter_result_image, color_dict])
 
             """ 노란색 """
             color_dict = {}
@@ -359,8 +386,13 @@ if __name__ == '__main__':
                                          v * (256 / v_range) + (256 / v_range)]
             color_dict['s'] = s * (256 / s_range)
             color_dict['v'] = v * (256 / v_range)
+            color_dict['s_range'] = s_range
+            color_dict['v_range'] = v_range
+            color_dict['width_limit_pixel'] = width_limit_pixel
+            color_dict['height_limit_pixel'] = height_limit_pixel
+            color_dict['pixel_change_count'] = pixel_change_count
             yellow_filter_result_image = colorFilter(img_color, color_dict)
-            result_filter_list.append(yellow_filter_result_image)
+            result_filter_list.append([yellow_filter_result_image, color_dict])
 
             """ 초록색 """
             color_dict = {}
@@ -370,8 +402,13 @@ if __name__ == '__main__':
                                          v * (256 / v_range) + (256 / v_range)]
             color_dict['s'] = s * (256 / s_range)
             color_dict['v'] = v * (256 / v_range)
+            color_dict['s_range'] = s_range
+            color_dict['v_range'] = v_range
+            color_dict['width_limit_pixel'] = width_limit_pixel
+            color_dict['height_limit_pixel'] = height_limit_pixel
+            color_dict['pixel_change_count'] = pixel_change_count
             green_filter_result_image = colorFilter(img_color, color_dict)
-            result_filter_list.append(green_filter_result_image)
+            result_filter_list.append([green_filter_result_image, color_dict])
 
             """ 연초록하늘색 """
             color_dict = {}
@@ -381,8 +418,13 @@ if __name__ == '__main__':
                                          v * (256 / v_range) + (256 / v_range)]
             color_dict['s'] = s * (256 / s_range)
             color_dict['v'] = v * (256 / v_range)
+            color_dict['s_range'] = s_range
+            color_dict['v_range'] = v_range
+            color_dict['width_limit_pixel'] = width_limit_pixel
+            color_dict['height_limit_pixel'] = height_limit_pixel
+            color_dict['pixel_change_count'] = pixel_change_count
             skyblue_filter_result_image = colorFilter(img_color, color_dict)
-            result_filter_list.append(skyblue_filter_result_image)
+            result_filter_list.append([skyblue_filter_result_image, color_dict])
 
             """ 파란색 """
             color_dict = {}
@@ -392,8 +434,13 @@ if __name__ == '__main__':
                                          v * (256 / v_range) + (256 / v_range)]
             color_dict['s'] = s * (256 / s_range)
             color_dict['v'] = v * (256 / v_range)
+            color_dict['s_range'] = s_range
+            color_dict['v_range'] = v_range
+            color_dict['width_limit_pixel'] = width_limit_pixel
+            color_dict['height_limit_pixel'] = height_limit_pixel
+            color_dict['pixel_change_count'] = pixel_change_count
             blue_filter_result_image = colorFilter(img_color, color_dict)
-            result_filter_list.append(blue_filter_result_image)
+            result_filter_list.append([blue_filter_result_image, color_dict])
 
             """ 보라색 """
             color_dict = {}
@@ -403,8 +450,13 @@ if __name__ == '__main__':
                                          v * (256 / v_range) + (256 / v_range)]
             color_dict['s'] = s * (256 / s_range)
             color_dict['v'] = v * (256 / v_range)
+            color_dict['s_range'] = s_range
+            color_dict['v_range'] = v_range
+            color_dict['width_limit_pixel'] = width_limit_pixel
+            color_dict['height_limit_pixel'] = height_limit_pixel
+            color_dict['pixel_change_count'] = pixel_change_count
             purple_filter_result_image = colorFilter(img_color, color_dict)
-            result_filter_list.append(purple_filter_result_image)
+            result_filter_list.append([purple_filter_result_image, color_dict])
 
     """ 
     이진화 처리된 이미지에서 컨투어를 찾는다.
@@ -416,13 +468,13 @@ if __name__ == '__main__':
     min_max_point_list = []
     new_min_max_point_list = []
     point_list = []
-    
+
     # print('result_filter_list : ', result_filter_list)
 
-    for bi_image in result_filter_list:
+    for bi_image,color_dict_info in result_filter_list:
 
         contour, hierarchy = findContour(bi_image)
-        po = findMinMaxPoint(bi_image, img_color, contour, hierarchy, filter_variable)
+        po = findMinMaxPoint(bi_image, img_color, contour, hierarchy, filter_variable,color_dict_info)
 
         if po:
             for i in po:
