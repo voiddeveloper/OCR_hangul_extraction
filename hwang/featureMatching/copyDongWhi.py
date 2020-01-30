@@ -1,3 +1,6 @@
+###################################################
+# 이미지에서 필터 적용하기 코드
+###################################################
 """ 여러 색이 있는 이미지에서 같은 계열의 색을 찾기"""
 
 import cv2
@@ -126,33 +129,33 @@ def findMinMaxPoint(bi_image, image, contour, hierarchy, filter_variable):
             for n in range(len(index)):
                 #해당컨투어를 부모로 가진것만 검색해 자식 컨투어의 영역은 검은색으로 색칠
                 if position[n]==3:
-                    #####################################################################################
-                    # 자식 contour의 무게 중심을 구하고, 자식 컨투어의 상/하/좌/우를 한칸씩 땡기기 // 황준환
-                    # M = 자식 contour의 moments 값
-                    M = cv2.moments(contour[index[n]])
-                    # cx, cy = 자식 contour의 무게중심 좌표
-                    if M['m00'] != 0:
-                        cx = int(M['m10']/M['m00'])
-                        cy = int(M['m01']/M['m00'])
-                        # print (cx, cy)
-                        # print("계산전", contour[index[n]])
+                    # #####################################################################################
+                    # # 자식 contour의 무게 중심을 구하고, 자식 컨투어의 상/하/좌/우를 한칸씩 땡기기 // 황준환
+                    # # M = 자식 contour의 moments 값
+                    # M = cv2.moments(contour[index[n]])
+                    # # cx, cy = 자식 contour의 무게중심 좌표
+                    # if M['m00'] != 0:
+                    #     cx = int(M['m10']/M['m00'])
+                    #     cy = int(M['m01']/M['m00'])
+                    #     # print (cx, cy)
+                    #     # print("계산전", contour[index[n]])
 
-                        for cnt in contour[index[n]]:
-                            if cnt[0][0] < cx:
-                                cnt[0][0] = cnt[0][0] + 1
-                            elif cnt[0][0] > cx:
-                                cnt[0][0] = cnt[0][0] - 1
+                    #     for cnt in contour[index[n]]:
+                    #         if cnt[0][0] < cx:
+                    #             cnt[0][0] = cnt[0][0] + 1
+                    #         elif cnt[0][0] > cx:
+                    #             cnt[0][0] = cnt[0][0] - 1
 
-                            if cnt[0][1] < cy:
-                                cnt[0][1] = cnt[0][1] + 1
-                            elif cnt[0][1] > cy:
-                                cnt[0][1] = cnt[0][1] - 1
+                    #         if cnt[0][1] < cy:
+                    #             cnt[0][1] = cnt[0][1] + 1
+                    #         elif cnt[0][1] > cy:
+                    #             cnt[0][1] = cnt[0][1] - 1
 
-                        # print("계산후", contour[index[n]])
-                    #####################################################################################
+                    #     # print("계산후", contour[index[n]])
+                    # #####################################################################################
                     cv2.drawContours(cimg, contour, index[n], color=0, thickness=-1)
-                    cv2.imshow('test', cimg)
-                    cv2.waitKey(0)
+                    # cv2.imshow('test', cimg)
+                    # cv2.waitKey(0)
             #흰색 좌표를 저장함
             pts=np.where(cimg==255)
             # 원본 이미지에서 해당 좌표에 어떤 색이 채워져 있는지 저장
@@ -189,11 +192,11 @@ if __name__ == '__main__':
        """
 
     filter_variable = {}
-    s_range = 20
-    v_range = 20
+    s_range = 12
+    v_range = 12
     filter_variable['width_limit_pixel'] = 10
     filter_variable['height_limit_pixel'] = 10
-    filter_variable['pixel_change_count'] = 30
+    filter_variable['pixel_change_count'] = 50
 
     # rgb 이미지 불러오기
     img_color = cv2.imread('hwang/imgSet/test1_2.png')
@@ -351,4 +354,5 @@ if __name__ == '__main__':
     print('네모영역 개수 : ', su)
 
     print('time : ', time.time() - start_time)
+    print(contour)
     cv2.waitKey(0)
