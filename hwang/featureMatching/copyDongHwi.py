@@ -234,7 +234,7 @@ def findMinMaxPoint(bi_image, image, contour, hierarchy, filter_variable, color_
 
                     cimg = cimg[y_min:y_max+1, x_min:x_max+1]
 
-                    # 크롭한 이미지 저장할때 파일 이름
+                    # 2020-01-30 동휘 작업 ) 크롭한 이미지 저장할때 파일 이름
                     file_name = "_color_" + str(color_dict_info['color']) + \
                                  "_s_range_" + str(color_dict_info['s_range']) + \
                                  "_v_range_" + str(color_dict_info['v_range']) + \
