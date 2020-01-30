@@ -242,8 +242,8 @@ def findMinMaxPoint(bi_image, image, contour, hierarchy, filter_variable):
                     img_number += 1
 
                     # 모든 필터를 통과한 후, 최종적으로 저장할 결과물을 확인하는 디버그
-                    # cv2.imshow('test', cimg)
-                    # cv2.waitKey(0)
+                    cv2.imshow('test', cimg)
+                    cv2.waitKey(0)
 
                     # 모든 필터에 통과한다면 min_max_list에 네모영역 좌표를 추가한다.
                     min_max_list.append([x_min, y_min, x_max, y_max])
