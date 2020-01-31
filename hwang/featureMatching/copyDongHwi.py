@@ -129,7 +129,15 @@ def findMinMaxPoint(bi_image, image, contour, hierarchy, filter_variable, color_
             # 픽셀의 색을 넣을 리스트
             ll = []
             # 이미지와 동일한 크기의 검은색 이미지를 만든다
+                 '''1월 31일 금요일 수정 (김종영)
+            평상시대로 change pixel count 를 계산하고 픽셀이 30번 이내로 바뀌는 이미지에 한해서
+           자식 컨투어의 크기를 1씩 줄인 이미지를 크롭해 저장한다 
+           cimg = 사이즈가 1큰 자식 컨투어를 빼고 픽셀 카운트를 세는 이미지 
+           ccimg = 자식 컨투어를 중심축으로 1씩 줄여 크롭하고 저장될 이미지 
+           '''
             cimg = np.zeros_like(image)
+            ccimg=np.zeros_like(image)
+
             # 검은색 이미지(cimg)에 컨투어 크기만큼 흰색으로 그림
             # 컨투어 안에도 흰색으로 차있음
             ###########################################################################
@@ -151,7 +159,6 @@ def findMinMaxPoint(bi_image, image, contour, hierarchy, filter_variable, color_
             # 부모가 있다면 해당 부모의 contour 리스트로 타고 올라간다.
             # 타고 올라간 다음, 그 contour도 부모가 있는지 확인한다.
             # 이 과정을 부모 contour가 없을 때까지 계속 반복하고, 총 몇번의 부모가 있었는지 계산한다.
-            ccimg=np.zeros_like(image)
             if hierarchy[0][i][3] != -1:
                 parentCount += 1
                 nextPoint = hierarchy[0][i][3]
