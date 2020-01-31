@@ -129,15 +129,7 @@ def findMinMaxPoint(bi_image, image, contour, hierarchy, filter_variable, color_
             # 픽셀의 색을 넣을 리스트
             ll = []
             # 이미지와 동일한 크기의 검은색 이미지를 만든다
-                 '''1월 31일 금요일 수정 (김종영)
-            평상시대로 change pixel count 를 계산하고 픽셀이 30번 이내로 바뀌는 이미지에 한해서
-           자식 컨투어의 크기를 1씩 줄인 이미지를 크롭해 저장한다 
-           cimg = 사이즈가 1큰 자식 컨투어를 빼고 픽셀 카운트를 세는 이미지 
-           ccimg = 자식 컨투어를 중심축으로 1씩 줄여 크롭하고 저장될 이미지 
-           '''
             cimg = np.zeros_like(image)
-            ccimg=np.zeros_like(image)
-
             # 검은색 이미지(cimg)에 컨투어 크기만큼 흰색으로 그림
             # 컨투어 안에도 흰색으로 차있음
             ###########################################################################
@@ -159,6 +151,7 @@ def findMinMaxPoint(bi_image, image, contour, hierarchy, filter_variable, color_
             # 부모가 있다면 해당 부모의 contour 리스트로 타고 올라간다.
             # 타고 올라간 다음, 그 contour도 부모가 있는지 확인한다.
             # 이 과정을 부모 contour가 없을 때까지 계속 반복하고, 총 몇번의 부모가 있었는지 계산한다.
+            ccimg=np.zeros_like(image)
             if hierarchy[0][i][3] != -1:
                 parentCount += 1
                 nextPoint = hierarchy[0][i][3]
@@ -258,25 +251,25 @@ def findMinMaxPoint(bi_image, image, contour, hierarchy, filter_variable, color_
                     # cv2.destroyAllWindows()
                     # 2020 - 01 - 31 ( 동휘작업)
                     # crop이미지를 분석하여 잡음을 제거하는 메서드
-                    # remove_noise_flag = removeNoise(ccimg)
+                    remove_noise_flag = removeNoise(ccimg)
 
-                    # if remove_noise_flag == False:
-                    # 2020-01-30 동휘 작업 ) 크롭한 이미지 저장할때 파일 이름
-                    file_name = "_color_" + str(color_dict_info['color']) + \
-                                "_s_range_" + str(color_dict_info['s_range']) + \
-                                "_v_range_" + str(color_dict_info['v_range']) + \
-                                "_count_" + str(color_dict_info['pixel_change_count'])
+                    if remove_noise_flag == False:
+                        # 2020-01-30 동휘 작업 ) 크롭한 이미지 저장할때 파일 이름
+                        file_name = "_color_" + str(color_dict_info['color']) + \
+                                    "_s_range_" + str(color_dict_info['s_range']) + \
+                                    "_v_range_" + str(color_dict_info['v_range']) + \
+                                    "_count_" + str(color_dict_info['pixel_change_count'])
 
-                    cv2.imwrite("resultFolder/" + str(img_number) + "_" + file_name + ".png", ccimg)
-                    img_number += 1
+                        # cv2.imwrite("resultFolder/" + str(img_number) + "_" + file_name + ".png", ccimg)
+                        img_number += 1
 
-                    # 모든 필터를 통과한 후, 최종적으로 저장할 결과물을 확인하는 디버그
-                    # cv2.imshow('test', cimg)
-                    # cv2.waitKey(0)
-                    # cv2.destroyAllWindows()
+                        # 모든 필터를 통과한 후, 최종적으로 저장할 결과물을 확인하는 디버그
+                        # cv2.imshow('test', cimg)
+                        # cv2.waitKey(0)
+                        # cv2.destroyAllWindows()
 
-                    # 모든 필터에 통과한다면 min_max_list에 네모영역 좌표를 추가한다.
-                    min_max_list.append([x_min, y_min, x_max , y_max ])
+                        # 모든 필터에 통과한다면 min_max_list에 네모영역 좌표를 추가한다.
+                        min_max_list.append([x_min, y_min, x_max+1, y_max+1])
 
     return min_max_list
 
@@ -342,7 +335,6 @@ def removeNoise(crop_image):
     percent = int((count * 100) / (h * w))
 
     # 잡음
-
     """
         return True -> 잡음
         return False -> 글자
@@ -396,11 +388,11 @@ if __name__ == '__main__':
        """
 
     filter_variable = {}
-    s_range = 20
+    s_range = 40
     v_range = 20
     width_limit_pixel = 10
     height_limit_pixel = 10
-    pixel_change_count = 30
+    pixel_change_count = 12
     filter_variable['width_limit_pixel'] = width_limit_pixel
     filter_variable['height_limit_pixel'] = height_limit_pixel
     filter_variable['pixel_change_count'] = pixel_change_count
