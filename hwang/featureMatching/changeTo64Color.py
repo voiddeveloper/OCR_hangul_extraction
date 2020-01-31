@@ -19,6 +19,7 @@ for i in range(0, height):
         pixel = (pixelInfo[i][j][0], pixelInfo[i][j][1], pixelInfo[i][j][2])
         cv.line(imgCopySize, (j,i), (j,i), pixel, 1)
 
-cv.imshow('original', imgStandard)
+# cv.imshow('original', imgStandard)
 cv.imshow('lowGraphic', imgCopySize)
 cv.waitKey(0)
+
