@@ -244,31 +244,32 @@ def findMinMaxPoint(bi_image, image, contour, hierarchy, filter_variable, color_
                     # op_draw = cv2.rectangle(image, (x_min, y_min), (x_max, y_max), (0, 0, 255), 1)
                     # cv2.imshow('sdf', op_draw)
 
+                    # cv2.imshow("qwe",cimg)
                     cimg = cimg[y_min:y_max + 1, x_min:x_max + 1]
                     ccimg = ccimg[y_min:y_max + 1, x_min:x_max + 1]
-                    # cv2.imshow("qwe",)
-
+                    # cv2.waitKey(0)
+                    # cv2.destroyAllWindows()
                     # 2020 - 01 - 31 ( 동휘작업)
                     # crop이미지를 분석하여 잡음을 제거하는 메서드
-                    remove_noise_flag = removeNoise(ccimg)
+                    # remove_noise_flag = removeNoise(ccimg)
 
-                    if remove_noise_flag == False:
-                        # 2020-01-30 동휘 작업 ) 크롭한 이미지 저장할때 파일 이름
-                        file_name = "_color_" + str(color_dict_info['color']) + \
-                                    "_s_range_" + str(color_dict_info['s_range']) + \
-                                    "_v_range_" + str(color_dict_info['v_range']) + \
-                                    "_count_" + str(color_dict_info['pixel_change_count'])
+                    # if remove_noise_flag == False:
+                    # 2020-01-30 동휘 작업 ) 크롭한 이미지 저장할때 파일 이름
+                    file_name = "_color_" + str(color_dict_info['color']) + \
+                                "_s_range_" + str(color_dict_info['s_range']) + \
+                                "_v_range_" + str(color_dict_info['v_range']) + \
+                                "_count_" + str(color_dict_info['pixel_change_count'])
 
-                        cv2.imwrite("resultFolder/" + str(img_number) + "_" + file_name + ".png", ccimg)
-                        img_number += 1
+                    cv2.imwrite("resultFolder/" + str(img_number) + "_" + file_name + ".png", ccimg)
+                    img_number += 1
 
-                        # 모든 필터를 통과한 후, 최종적으로 저장할 결과물을 확인하는 디버그
-                        # cv2.imshow('test', cimg)
-                        # cv2.waitKey(0)
-                        # cv2.destroyAllWindows()
+                    # 모든 필터를 통과한 후, 최종적으로 저장할 결과물을 확인하는 디버그
+                    # cv2.imshow('test', cimg)
+                    # cv2.waitKey(0)
+                    # cv2.destroyAllWindows()
 
-                        # 모든 필터에 통과한다면 min_max_list에 네모영역 좌표를 추가한다.
-                        min_max_list.append([x_min, y_min, x_max , y_max ])
+                    # 모든 필터에 통과한다면 min_max_list에 네모영역 좌표를 추가한다.
+                    min_max_list.append([x_min, y_min, x_max , y_max ])
 
     return min_max_list
 
@@ -298,11 +299,11 @@ def removeNoise(crop_image):
             2. 체크한 픽셀중에서 흰색이 하나도 없다면 잡음으로 처리한다.
             """
             try:
-                top,a,b = crop_image[i][j-1]
+                top,a,b = crop_image[i-1][j]
             except:
                 top,a,b = crop_image[i][j]
             try:
-                left,a,b = crop_image[i+1][j]
+                left,a,b = crop_image[i][j-1]
             except:
                 left,a,b = crop_image[i][j]
             try:
@@ -345,7 +346,7 @@ def removeNoise(crop_image):
     글자가 차지하는 영역이 너무 작거나, 너무 많다면 글자가 아니다 
     """
     # 잡음
-    if percent < 10 or 60 < percent and percent < 95:
+    if percent < 10 or 70 < percent and percent < 95:
         return True
     elif percent >= 95:
         """ 
@@ -452,7 +453,7 @@ if __name__ == '__main__':
                 continue
 
             # 검은색 필터가 겹치면 제외
-            if s * (256 / s_range) < 255 and v * (256 / v_range) < 60:
+            if s * (256 / s_range) < 255 and v * (256 / v_range) < 50:
                 continue
 
             # 색상 필터 적용해서 이미지에서 원하는 색을 뽑기
