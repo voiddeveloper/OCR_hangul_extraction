@@ -6,6 +6,12 @@ import time
 
 네이버 ocr 전처리 과정 따라하기
 
+한개의 변수를 제외하고, 모든 변수 값을 네이버 따라함.
+
+removehoughLineP() 함수에 
+limit 변수가 있는데, 이 값은 안나와있음. 
+
+[ 과정 ]
 1. 이미지 불러오기
 2. rgb -> gray 변환 // bgrToGray()
 3. 경계 이미지 추출 // morphGradient()
@@ -66,11 +72,11 @@ def morphClose(image):
 # 직선을 검출하는 메서드임
 # contour 추출 하기 전에 불필요한 선을 제거하는 과정
 def removehoughLineP(image):
-    
+
     # 글자영역을 그리기 위해서 검은 이미지 만듦
     black_image = np.zeros_like(image)
 
-    limit = 10  # 네이버 따라했는데 이 값은 얼마로 정했는지 안나옴
+    limit = 10  # 이 값은 얼마로 정했는지 안나옴
     rho = 1
     threshold = 100  # 선 추출 정확도
     minLineLength = 80 # 추출한 선의 길이
@@ -78,13 +84,13 @@ def removehoughLineP(image):
 
     # 직선 검출
     lines = cv2.HoughLinesP(image, rho, np.pi / 360, threshold, minLineLength, maxLineGap)
-    
+
     for i in range(len(lines)):
         for x1, y1, x2, y2 in lines[i]:
-            
+
             # 글자 영역 그리기
             black_image = cv2.line(black_image, (x1, y1), (x2, y2), (255, 255, 255), 3)
-            
+
             # 불필요한 선 제거 -> 세로가 limit이상인 선 제거
             if y2 - y1 > limit:
                 black_image = cv2.line(black_image, (x1, y1), (x2, y2), (0, 0, 0), 3)
@@ -127,7 +133,7 @@ if __name__ == '__main__':
 
     # 글자 영역을 잘 잡게하기 위한 전처리
     morph_close = morphClose(adaptive_mean_image)
-    
+
     # 글자 영역을 검은 이미지 위에 하얀색으로 그림
     text_detect_image = removehoughLineP(morph_close)
 
