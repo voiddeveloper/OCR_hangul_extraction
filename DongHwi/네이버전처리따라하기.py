@@ -36,17 +36,7 @@ def morphGradient(gray_image):
     """ 커널에 대해서 잘 모름 """
     kernel = np.ones((2, 2), np.uint8)
 
-    # 팽창과정 - 글자를 조금 더 두껍게 만드는 과정
-    dilation = cv2.dilate(gray_image, kernel, iterations=1)
-
-    # 침식과정 - 글자를 조금 더 얇게 만드는 과정
-    erosion = cv2.erode(gray_image, kernel, iterations=1)
-
-    buffer1 = np.asarray(dilation)
-    buffer2 = np.asarray(erosion)
-
-    # 확대한 이미지에서 축소한 이미지를 빼면 경계선만 남은 이미지가 나온다.
-    morph_gradient_image = buffer1 - buffer2
+    morph_gradient_image = cv2.morphologyEx(gray_image, cv2.MORPH_GRADIENT, kernel)
 
     cv2.imshow('morph_gradient_image', morph_gradient_image)
 
