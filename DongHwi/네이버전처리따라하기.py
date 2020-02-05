@@ -24,7 +24,7 @@ limit 변수가 있는데, 이 값은 안나와있음.
 """
 
 # bgr 이미지 -> gray 이미지로 변환
-def bgrToGray(image):
+def bgrToGray(bgr_image):
     gray_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2GRAY)
     cv2.imshow('gray_image', gray_image)
 
@@ -109,7 +109,7 @@ if __name__ == '__main__':
     start_time = time.time()
 
     # 이미지 불러오기
-    bgr_image = cv2.imread('image/test_image/6.jpg')
+    bgr_image = cv2.imread('image/test_image/2.jpg')
     cv2.imshow('bgr_image', bgr_image)
 
     # rgb -> gray
