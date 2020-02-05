@@ -5,6 +5,7 @@ import time
 """
 
 https://d2.naver.com/helloworld/8344782
+https://d2.naver.com/helloworld/8344782
 
 네이버 ocr 전처리 과정 따라하기
 
