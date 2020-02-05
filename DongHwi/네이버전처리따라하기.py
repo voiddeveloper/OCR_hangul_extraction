@@ -4,12 +4,12 @@ import time
 
 """
 
+https://d2.naver.com/helloworld/8344782
+
 네이버 ocr 전처리 과정 따라하기
 
-한개의 변수를 제외하고, 모든 변수 값을 네이버 따라함.
-
 removehoughLineP() 함수에 
-limit 변수가 있는데, 이 값은 안나와있음. 
+limit 변수가 있는데, 이 값은 명시 안되어있음. 
 
 [ 과정 ]
 1. 이미지 불러오기
