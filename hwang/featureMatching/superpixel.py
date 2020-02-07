@@ -7,6 +7,8 @@ import argparse
  
 # 이 예제를 사용하려면 scikit을 install 해야 함
 # pip install scikit-image
+# 실행 예시: python superpixel.py --image 1.png
+
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-i", "--image", required = True, help = "Path to the image")
@@ -16,7 +18,7 @@ args = vars(ap.parse_args())
 image = img_as_float(io.imread(args["image"]))
  
 # loop over the number of segments
-for numSegments in (100, 200, 300):
+for numSegments in (1600, 3200, 6400):
 	# apply SLIC and extract (approximately) the supplied number of segments
 	segments = slic(image, n_segments = numSegments, sigma = 5)
  
