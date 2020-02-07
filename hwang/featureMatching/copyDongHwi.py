@@ -9,9 +9,9 @@ import numpy as np
 import time
 import matplotlib.image as mpimg
 from matplotlib.pyplot import imshow
+import similarityHSV as hsv
 
 img_number = 0
-
 
 # 색 필터 - 이진화 이미지 반환
 def colorFilter(img_color, color_dict):
@@ -66,19 +66,37 @@ def findMinMaxPoint(bi_image, image, contour, hierarchy, filter_variable, color_
     remove_flag = False
 
     h, w, c = image.shape
+    testimg2 = np.zeros_like(image)
 
     for i, con in enumerate(contour):
+
+        # 색상 필터를 거치고 나온, 어떠한 조건도 적용하지 않은 최초 contour 확인용 디버그
+        # testimg = np.zeros_like(image)
+        # cv2.drawContours(testimg,contour,i,color=(255,255,255),thickness=-1)
+        # cv2.drawContours(testimg2,contour,i,color=(255,255,255),thickness=-1)
+        # cv2.imshow('testimg', testimg)
+        # cv2.imshow('testimg2', testimg2)
+        # cv2.waitKey(0)
+
         remove_flag = False
 
         # 글자는 최소 4개의 꼭지점으로 이루어져있다.
-        # 따라서 3개 이하면 글자가 아니다
-        if len(con) <= 3:
-            continue
+        # 따라서 3개 이하면 글자가 아니다.
+        # 2020-02-04 황준환 작업
+        # 글씨 중에서, 크기가 작아서 1픽셀로 이루어진 선이 검출될 경우, 꼭지점이 2개만 나올 수 있다.
+        # 따라서 이 조건은 글씨를 찾는 최소의 조건으로 성립할 수 없기 때문에 주석 처리함.
+        # if len(con) <= 3:
+        #     continue
 
+        """
+        1번 필터
+        가로 세로 길이가 모두 10픽셀 이하인 글자는 잡지 않겠다.
+        """
         x_min = 9999
         x_max = 0
         y_min = 9999
         y_max = 0
+        # contour의 x, y 최소값 구하기
         for index, j in enumerate(contour[i]):
 
             if x_min > j[0][0]:
@@ -93,15 +111,9 @@ def findMinMaxPoint(bi_image, image, contour, hierarchy, filter_variable, color_
             if y_max < j[0][1]:
                 y_max = j[0][1]
 
-        """
-        1번 필터
-        가로 세로 길이가 모두 10픽셀 이하인 글자는 잡지 않겠다.
-        """
-        if (x_max - x_min) <= filter_variable['width_limit_pixel'] and (y_max - y_min) <= filter_variable[
-            'height_limit_pixel']:
+        if (x_max - x_min) <= filter_variable['width_limit_pixel'] and (y_max - y_min) <= filter_variable['height_limit_pixel']:
             continue
         else:
-
             # """
             # 2번 필터
             # 네모영역안의 픽셀을 검사해서 15~50% 미만이면 글자로 판단 그리고 95%이상이면 글자로 판단( ㅡ, ㅣ ), 그렇지 않으면 잡음으로 처리한다.
@@ -140,12 +152,15 @@ def findMinMaxPoint(bi_image, image, contour, hierarchy, filter_variable, color_
             # 다만, 짝수번째 부모가 존재하는 contour는 해당 필터에 속하는 색이 될 수도 있기 때문에, 이때는 예외처리하지 않는다.
             parentCount = 0
 
-            ##### 테스트용, 필터를 통과한 모든 contour 정보를 확인한다. #####
+            # ##### 테스트용, 필터를 통과한 모든 contour 정보를 확인한다. #####
+            # # 가로, 세로 크기 제한 필터를 거친 결과
             # testimg = np.zeros_like(image)
             # cv2.drawContours(testimg,contour,i,color=(255,255,255),thickness=-1)
+            # cv2.drawContours(testimg2,contour,i,color=(255,255,255),thickness=-1)
             # cv2.imshow('testimg', testimg)
+            # cv2.imshow('testimg2', testimg2)
             # cv2.waitKey(0)
-            ##################
+            # ##################
 
             # 해당 contour의 부모가 존재 하는지 확인한다.
             # 부모가 있다면 해당 부모의 contour 리스트로 타고 올라간다.
@@ -234,10 +249,18 @@ def findMinMaxPoint(bi_image, image, contour, hierarchy, filter_variable, color_
 
                 # cv2.imshow('test', cimg)
                 # cv2.waitKey(0)
+                cimg = cimg[y_min:y_max + 1, x_min:x_max + 1]
+
+                cropImage = cimg
+                # cv2.imshow(str(i), cimg)
+                # cv2.waitKey(0)
+                pixel_change_count = hsv.pixelLinkList(cropImage)
+                print(pixel_change_count)
 
                 # 중복을 제거해주는 부분
-                pixel_change_count = list(set([tuple(set(ll[0])) for ll[0] in ll[0]]))
-                if len(pixel_change_count) <= filter_variable['pixel_change_count']:
+                # pixel_change_count = list(set([tuple(set(ll[0])) for ll[0] in ll[0]]))
+                # if len(pixel_change_count) <= filter_variable['pixel_change_count']:
+                if pixel_change_count <= filter_variable['pixel_change_count']:
                     # cv2.imshow("qweqwe",cimg)
                     # cv2.waitKey(0)
                     # op_draw = cv2.drawContours(image ,contour,i,color=(0,255,0),thickness=1)
@@ -390,15 +413,16 @@ if __name__ == '__main__':
     filter_variable = {}
     s_range = 40
     v_range = 20
-    width_limit_pixel = 10
-    height_limit_pixel = 10
+    width_limit_pixel = 8
+    height_limit_pixel = 8
     pixel_change_count = 12
     filter_variable['width_limit_pixel'] = width_limit_pixel
     filter_variable['height_limit_pixel'] = height_limit_pixel
     filter_variable['pixel_change_count'] = pixel_change_count
 
     # rgb 이미지 불러오기
-    img_color = cv2.imread('test1.png')
+    img_color = cv2.imread('hwang/imgSet/20200203/1.jpg')
+    # img_color = cv2.imread('hwang/imgSet/test3.png')
 
     # cv2.imshow('image', img_color)
     # cv2.waitKey(0)
@@ -432,7 +456,7 @@ if __name__ == '__main__':
     """ 하얀색 """
     color_dict = {}
     color_dict['color'] = 'white'
-    color_dict['lower_range'] = [0, 0, 180]
+    color_dict['lower_range'] = [0, 0, 165]
     color_dict['upper_range'] = [179, 50, 255]
     color_dict['s'] = 0
     color_dict['v'] = 0
