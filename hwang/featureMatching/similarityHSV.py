@@ -134,6 +134,7 @@ def pixelLinkList(img):
 
                 # savePoint의 좌표를 구한다.
                 for k in range(count):
+                    # print('k = ', k)
                     tempX = savePoint[k][0]
                     tempY = savePoint[k][1]
                     
@@ -174,6 +175,7 @@ def pixelLinkList(img):
                     del savePoint[0]
 
                 # print('pixelLink = ', pixelLink, 'savePoint = ', savePoint)
+                savePoint = list(set(map(tuple, savePoint)))
 
                 # savePoint가 하나도 없다면 계산을 그만한다.
                 if len(savePoint) == 0:
@@ -196,6 +198,6 @@ def pixelLinkList(img):
     # print(pixelList)
     return len(pixelList)
 
-# img = cv.imread('hwang/imgSet/20200203/test.png')
-# count = pixelLinkList(img)
-# print(count)
+img = cv.imread('hwang/imgSet/20200203/test2.png')
+count = pixelLinkList(img)
+print(count)
