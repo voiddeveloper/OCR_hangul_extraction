@@ -29,7 +29,7 @@ def findTwoColorDistanceHSV(hsvColor1, hsvColor2):
 
 def pixelLinkList(img):
     # 기본 컬러 = BGR
-    imgOriginal = cv.imread(img, cv.IMREAD_COLOR)
+    imgOriginal = img
     # BGR -> HSV로 변경
     imgHSV = cv.cvtColor(imgOriginal, cv.COLOR_BGR2HSV)
 
@@ -194,5 +194,8 @@ def pixelLinkList(img):
                 pixelPositionList.append(pixelList[k][l])
 
     # print(pixelList)
+    return len(pixelList)
 
-# pixelLinkList('hwang/imgSet/20200203/test.png')
+# img = cv.imread('hwang/imgSet/20200203/test.png')
+# count = pixelLinkList(img)
+# print(count)
