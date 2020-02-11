@@ -1,6 +1,8 @@
 import cv2 as cv
 import numpy as np
 import math
+import queue
+import time
 
 # 2개의 HSV 색상값을 입력 받을 시, 2개의 색상 유사도 거리값 구하는 메소드
 def findTwoColorDistanceHSV(hsvColor1, hsvColor2):
@@ -27,6 +29,11 @@ def findTwoColorDistanceHSV(hsvColor1, hsvColor2):
 
     return distance
 
+# 유사한 색끼리 그룹을 묶어주는 메소드
+# 자신의 색깔과 주변 상/하/좌/우 픽셀의 색깔을 비교하여 얼마나 비슷한지 판별한다. (판별하는 방법은 findTwoColorDistanceHSV)
+# 만약 비슷한 색이라고 판단되면, 하나의 그룹으로 묶어준다.
+# 그룹이 생성되면, 해당 그룹의 주변 픽셀 색깔을 계산하고 또 비슷한 픽셀이 있는지 비교한다.
+# 이 과정을 주변에 비슷한 픽셀이 없을 때까지 반복한다.
 def pixelLinkList(img):
     # 기본 컬러 = BGR
     imgOriginal = img
@@ -37,6 +44,12 @@ def pixelLinkList(img):
     height, width = imgOriginal.shape[:2]
     pixelInfoBGR = [[0 for x in range(height)] for y in range(width)]
     pixelInfoHSV = [[0 for x in range(height)] for y in range(width)]
+
+    # BGR, HSV 픽셀값 저장
+    for i in range(0, width):
+        for j in range(0, height):
+            pixelInfoBGR[i][j] = imgOriginal[j, i]
+            pixelInfoHSV[i][j] = imgHSV[j, i]
 
     # 그림 좌표 배열 생성
     pixelPosition = []
@@ -51,12 +64,6 @@ def pixelLinkList(img):
         if positionY == height:
             positionY = 0
             positionX += 1
-
-    # BGR, HSV 픽셀값 저장
-    for i in range(0, width):
-        for j in range(0, height):
-            pixelInfoBGR[i][j] = imgOriginal[j, i]
-            pixelInfoHSV[i][j] = imgHSV[j, i]
             
     # 유사한색으로 묶인 pixel 집합
     pixelList = []
@@ -174,9 +181,9 @@ def pixelLinkList(img):
                 for k in range(count):
                     del savePoint[0]
 
-                # print('pixelLink = ', pixelLink, 'savePoint = ', savePoint)
                 savePoint = list(set(map(tuple, savePoint)))
-
+                # print('pixelLink = ', pixelLink, 'savePoint = ', savePoint)
+                # print('saveLength = ', len(savePoint), 'savePoint = ', savePoint)
                 # savePoint가 하나도 없다면 계산을 그만한다.
                 if len(savePoint) == 0:
                     break
@@ -198,6 +205,147 @@ def pixelLinkList(img):
     # print(pixelList)
     return len(pixelList)
 
-img = cv.imread('hwang/imgSet/20200203/test2.png')
-count = pixelLinkList(img)
+
+
+def newPixelLinkList(img):
+    # 기본 컬러 = BGR
+    imgOriginal = img
+    # BGR -> HSV로 변경
+    imgHSV = cv.cvtColor(imgOriginal, cv.COLOR_BGR2HSV)
+
+    # 픽셀값을 저장할 배열 생성
+    height, width = imgOriginal.shape[:2]
+    pixelInfoBGR = [[0 for x in range(height)] for y in range(width)]
+    pixelInfoHSV = [[0 for x in range(height)] for y in range(width)]
+
+    # BGR, HSV 픽셀값 저장
+    for i in range(0, width):
+        for j in range(0, height):
+            pixelInfoBGR[i][j] = imgOriginal[j, i]
+            pixelInfoHSV[i][j] = imgHSV[j, i]
+
+    # 그림 좌표 배열 생성
+    pixelPosition = []
+    positionX = 0
+    positionY = 0
+
+    # 좌표값을 저장한다.
+    for i in range(0, int(width * height)):
+        pixelPosition.append((positionX, positionY))
+        
+        positionY += 1
+        if positionY == height:
+            positionY = 0
+            positionX += 1
+
+    # 유사한 색이라고 인정하는 색의 거리, findTwoColorDistanceHSV 메소드의 distance 값에 이용된다.
+    similarityDistance = 40
+
+    i = 0
+    j = 0
+
+    # 그림 전체 기준에서 비슷한 색깔끼리 하나의 집합으로 묶이는 리스트
+    pixelList = []
+
+    while True:
+        # 비슷한 색상으로 인정된 픽셀 집합
+        pixelLink = []
+
+        # 최소한 자기 자신은 무조건 pixelLink에 포함된다.
+        pixelLink.append((i, j))
+
+        # dict 생성, default 값은 False
+        pixelMap = {}
+        for positionX in range(0, width):
+            for positionY in range(0, height):
+                pixelMap[str(positionX) + ',' + str(positionY)] = False
+
+        # 해당 위치의 pixelMap 값을 True로 변환한다.
+        pixelMap[str(i) + ',' + str(j)] = True
+
+        # 나중에 추가적으로 비교해야 할 위치를 저장하는 리스트
+        savePoint = queue.Queue()
+        
+        while True:
+            # 자신의 상/하/좌/우 픽셀 색상과 자신의 색상이 얼마나 비슷한지 계산한다.
+            # 단, 해당 좌표의 pixelMap 값이 False 일 경우에만 저장한다.
+
+            # 우측 좌표 비교
+            if i < width - 1:
+                if similarityDistance >= findTwoColorDistanceHSV(pixelInfoHSV[i][j], pixelInfoHSV[i + 1][j]):
+                    if not pixelMap[str(i + 1) + ',' + str(j)]:
+                        pixelLink.append((i + 1, j))
+                        savePoint.put(str(i + 1) + ',' + str(j))
+                        pixelMap[str(i + 1) + ',' + str(j)] = True
+            
+            # 아래쪽 좌표 비교
+            if j < height - 1:
+                if similarityDistance >= findTwoColorDistanceHSV(pixelInfoHSV[i][j], pixelInfoHSV[i][j + 1]):
+                    if not pixelMap[str(i) + ',' + str(j + 1)]:
+                        pixelLink.append((i, j + 1))
+                        savePoint.put(str(i) + ',' + str(j + 1))
+                        pixelMap[str(i) + ',' + str(j + 1)] = True
+
+            # 위쪽 좌표 비교
+            if j > 0:
+                if similarityDistance >= findTwoColorDistanceHSV(pixelInfoHSV[i][j], pixelInfoHSV[i][j - 1]):
+                    if not pixelMap[str(i) + ',' + str(j - 1)]:
+                        pixelLink.append((i, j - 1))
+                        savePoint.put(str(i) + ',' + str(j - 1))
+                        pixelMap[str(i) + ',' + str(j - 1)] = True
+
+            # 좌측 좌표 비교
+            if i > 0:
+                if similarityDistance >= findTwoColorDistanceHSV(pixelInfoHSV[i][j], pixelInfoHSV[i - 1][j]):
+                    if not pixelMap[str(i - 1) + ',' + str(j)]:
+                        pixelLink.append((i - 1, j))
+                        savePoint.put(str(i - 1) + ',' + str(j))
+                        pixelMap[str(i - 1) + ',' + str(j)] = True
+
+            # 다음에 비교할 좌표가 없다면 반복을 멈춘다.
+            if savePoint.empty():
+                break
+            
+            # 다음에 비교할 좌표값을 뽑는다.
+            else:
+                position = savePoint.get()
+                position = position.split(',')
+                i = int(position[0])
+                j = int(position[1])
+
+        # 비슷한 색깔의 픽셀 묶음이 나왔다면, 해당 값을 pixelList에 저장한다.
+        pixelList.append(pixelLink)
+
+        # print(pixelLink)
+
+        # pixelList로 선정된 좌표는 그림 좌표에서 제거한다.
+        pixelPosition = list(set(pixelPosition) - set(pixelLink))
+
+        if len(pixelPosition) > 0:
+            i = pixelPosition[0][0]
+            j = pixelPosition[0][1]
+        else:
+            break
+
+    # print(pixelList)
+    for k in range(0, len(pixelList[0])):
+        cv.line(imgOriginal, (pixelList[0][k][0], pixelList[0][k][1]), (pixelList[0][k][0], pixelList[0][k][1]), (0, 0, 255), 1)
+    
+    print('pixelList 전체 묶음 갯수 : ', len(pixelList))
+    print('1번째 pixel 묶음 pixel 갯수 : ', len(pixelList[0]))
+    # for k in range(0, len(pixelList)):
+    #     print(len(pixelList[k]))
+
+    cv.imshow("test", imgOriginal)
+    cv.waitKey(0)
+    
+
+    return len(pixelList)
+
+startTime = time.time()
+
+img = cv.imread('hwang/imgSet/20200203/31.jpg')
+count = newPixelLinkList(img)
+# count = pixelLinkList(img)
 print(count)
+print('time : ', time.time() - startTime)
