@@ -329,11 +329,13 @@ def reverseFirstLayer(img):
     
     return pixelLink
 
-def singleLineDraw(img):
-    startTime = time.time()
+def singleLineDraw(img, x, y, imgCopy):
+    # startTime = time.time()
 
     # 기본 컬러 = BGR
     imgOriginal = img
+    imgBlack = imgCopy
+
     # BGR -> HSV로 변경
     imgHSV = cv.cvtColor(imgOriginal, cv.COLOR_BGR2HSV)
 
@@ -365,8 +367,8 @@ def singleLineDraw(img):
     # 유사한 색이라고 인정하는 색의 거리, findTwoColorDistanceHSV 메소드의 distance 값에 이용된다.
     similarityDistance = 35
 
-    startPointX = 0
-    startPointY = 0
+    startPointX = x
+    startPointY = y
 
     ##################################################
     # # 비슷한 색깔끼리 하나의 집합으로 묶이는 리스트
@@ -399,6 +401,7 @@ def singleLineDraw(img):
     directionCount = 0
     # 비교점이 바뀌었는지 체크하는 값
     moveFlag = False
+    moveCount = 0
     # 시작점과 현재 비교점의 색상이 얼마나 차이나는지 비교한다.
     # 차이값이 similarityDistance값 이하면 비슷한 색으로 취급하고, 하나의 영역으로 묶는다.
     # 이미 묶인 좌표는 중복체크를 해서 제외한다.
@@ -522,16 +525,22 @@ def singleLineDraw(img):
 
             # 비교점이 바뀌었는지 확인한다.
             if moveFlag:
+                moveCount += 1
+
                 # 바뀐 비교점이 시작점과 동일하다면, 한바퀴 돌아온 것이다. 반복을 종료한다.
                 if startPointX == nextPointX and startPointY == nextPointY:
                     break
+                
+                elif moveCount == 300000:
+                    break
+
                 # 바뀐 비교점이 시작점과 다르다면, 다음번 진행할 방향값을 반시계 방향으로 90도 회전하고, directCount = 0 으로 한다.
                 else:
                     moveFlag = False
                     direction -= 2
                     directionCount = 0
 
-                    cv.line(imgOriginal, (nextPointX, nextPointY), (nextPointX, nextPointY), (0, 0, 255), 1)                    
+                    cv.line(imgBlack, (nextPointX, nextPointY), (nextPointX, nextPointY), (0, 0, 255), 1)                    
 
             # 비교점이 바뀌지 않았다면, 다음에 비교할 방향을 +1하고, directCount도 +1 한다.
             else:
@@ -543,9 +552,9 @@ def singleLineDraw(img):
             break
     
     # print(pixelLink)
-    print('time : ', time.time() - startTime)
-    cv.imshow('test', imgOriginal)
-    cv.waitKey(0)
+    # print('time : ', time.time() - startTime)
+    # cv.imshow('test', imgBlack)
+    # cv.waitKey(0)
 
 # 컨투어 찾기
 def findContour(img):
@@ -555,43 +564,31 @@ def findContour(img):
     # 컨투어 반환
     return contours, hierarchy
 
-
+startTime = time.time()
 img = cv.imread('hwang/imgSet/20200203/1.jpg')
-# img = cv.imread('hwang/imgSet/test3.png')
-# count = pixelLinkList(img)
-# count = reverseFirstLayer(img)
-singleLineDraw(img)
+imgCopy = np.zeros_like(img)
 
-# print(len(count))
+imgGrayscale = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+cv.imshow('real', imgGrayscale)
 
-######################################################################
-# 테스트용
-# # 픽셀값을 저장할 배열 생성
-# height, width = imgOriginal.shape[:2]
-# pixelInfoBGR = [[0 for x in range(height)] for y in range(width)]
-# pixelInfoHSV = [[0 for x in range(height)] for y in range(width)]
+# ret1, imgBinary1 = cv.threshold(imgGrayscale, 60, 255, cv.THRESH_BINARY)
+# cv.imshow('binary1', imgBinary1)
 
-# # BGR, HSV 픽셀값 저장
-# for i in range(0, width):
-#     for j in range(0, height):
-#         pixelInfoBGR[i][j] = imgOriginal[j, i]
-#         pixelInfoHSV[i][j] = imgHSV[j, i]
+# ret2, imgBinary2 = cv.threshold(imgGrayscale, 90, 255, cv.THRESH_BINARY)
+# cv.imshow('binary2', imgBinary2)
 
-# for i in range(0, 70):
-#     print('i = ', i)
-#     print('first check')
-#     print('check to startPoint = ')
-#     # print(pixelInfoHSV[0][0])
-#     # print(pixelInfoHSV[i][0])
-#     print(round(findTwoColorDistanceHSV(pixelInfoHSV[0][0], pixelInfoHSV[i + 0][0]), 4))
-#     print('second check')
-#     print('check to nearPoint = ')
-#     # print('상 = ', round(findTwoColorDistanceHSV(pixelInfoHSV[i][186], pixelInfoHSV[i][186 - 1]), 4))
-#     # print('하 = ', round(findTwoColorDistanceHSV(pixelInfoHSV[i][186], pixelInfoHSV[i][186 + 1]), 4))
-#     # print('하2 = ', round(findTwoColorDistanceHSV(pixelInfoHSV[i][186], pixelInfoHSV[i][186 + 2]), 4))
-#     # print('좌 = ', round(findTwoColorDistanceHSV(pixelInfoHSV[i][186], pixelInfoHSV[i - 1][186]), 4))
-#     # print(pixelInfoHSV[i][0])
-#     # print(pixelInfoHSV[i + 1][0])
-#     print('우 = ', round(findTwoColorDistanceHSV(pixelInfoHSV[i][0], pixelInfoHSV[i + 1][0]), 4))
-#     print('')
+# ret3, imgBinary3 = cv.threshold(imgGrayscale, 127, 255, cv.THRESH_BINARY)
+# cv.imshow('binary3', imgBinary3)
+
+contour, hierarchy = findContour(imgGrayscale)
+
+# cv.waitKey(0)
+print(len(contour))
+for i in range(0, len(contour)):
+    # print('i = ', i)
+    singleLineDraw(img, contour[i][0][0][0], contour[i][0][0][1], imgCopy)
+
+cv.imshow('test', imgCopy)
+print('time : ', time.time() - startTime)
+cv.waitKey(0)
 
