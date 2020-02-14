@@ -5,6 +5,7 @@ import queue
 import time
 import sys
 from random import *
+from matplotlib import pyplot as plt
 
 # 2개의 HSV 색상값을 입력 받을 시, 2개의 색상 유사도 거리값 구하는 메소드
 def findTwoColorDistanceHSV(hsvColor1, hsvColor2):
@@ -112,12 +113,6 @@ def pixelLinkList(img):
                         pixelLink.append((i + 1, j))
                         savePoint.put(str(i + 1) + ',' + str(j))
                         pixelMap[str(i + 1) + ',' + str(j)] = True
-            # if nextPointX < width - 1:
-            #     if similarityDistance >= findTwoColorDistanceHSV(pixelInfoHSV[i][j], pixelInfoHSV[nextPointX + 1][nextPointY]):
-            #         if not pixelMap[str(nextPointX + 1) + ',' + str(nextPointY)]:
-            #             pixelLink.append((nextPointX + 1, nextPointY))
-            #             savePoint.put(str(nextPointX + 1) + ',' + str(nextPointY))
-            #             pixelMap[str(nextPointX + 1) + ',' + str(nextPointY)] = True
             
             # 아래쪽 좌표 비교
             if j < height - 1:
@@ -126,12 +121,6 @@ def pixelLinkList(img):
                         pixelLink.append((i, j + 1))
                         savePoint.put(str(i) + ',' + str(j + 1))
                         pixelMap[str(i) + ',' + str(j + 1)] = True
-            # if nextPointY < height - 1:
-            #     if similarityDistance >= findTwoColorDistanceHSV(pixelInfoHSV[i][j], pixelInfoHSV[nextPointX][nextPointY + 1]):
-            #         if not pixelMap[str(nextPointX) + ',' + str(nextPointY + 1)]:
-            #             pixelLink.append((nextPointX, nextPointY + 1))
-            #             savePoint.put(str(nextPointX) + ',' + str(nextPointY + 1))
-            #             pixelMap[str(nextPointX) + ',' + str(nextPointY + 1)] = True
 
             # 위쪽 좌표 비교
             if j > 0:
@@ -140,12 +129,6 @@ def pixelLinkList(img):
                         pixelLink.append((i, j - 1))
                         savePoint.put(str(i) + ',' + str(j - 1))
                         pixelMap[str(i) + ',' + str(j - 1)] = True
-            # if nextPointY > 0:
-            #     if similarityDistance >= findTwoColorDistanceHSV(pixelInfoHSV[i][j], pixelInfoHSV[nextPointX][nextPointY - 1]):
-            #         if not pixelMap[str(nextPointX) + ',' + str(nextPointY - 1)]:
-            #             pixelLink.append((nextPointX, nextPointY - 1))
-            #             savePoint.put(str(nextPointX) + ',' + str(nextPointY - 1))
-            #             pixelMap[str(nextPointX) + ',' + str(nextPointY - 1)] = True
 
             # 좌측 좌표 비교
             if i > 0:
@@ -154,12 +137,6 @@ def pixelLinkList(img):
                         pixelLink.append((i - 1, j))
                         savePoint.put(str(i - 1) + ',' + str(j))
                         pixelMap[str(i - 1) + ',' + str(j)] = True
-            # if nextPointX > 0:
-            #     if similarityDistance >= findTwoColorDistanceHSV(pixelInfoHSV[i][j], pixelInfoHSV[nextPointX - 1][nextPointY]):
-            #         if not pixelMap[str(nextPointX - 1) + ',' + str(nextPointY)]:
-            #             pixelLink.append((nextPointX - 1, nextPointY))
-            #             savePoint.put(str(nextPointX - 1) + ',' + str(nextPointY))
-            #             pixelMap[str(nextPointX - 1) + ',' + str(nextPointY)] = True
 
             # 다음에 비교할 좌표가 없다면 반복을 멈춘다.
             if savePoint.empty():
@@ -171,8 +148,6 @@ def pixelLinkList(img):
                 position = position.split(',')
                 i = int(position[0])
                 j = int(position[1])
-                # nextPointX = int(position[0])
-                # nextPointY = int(position[1])
 
         # 비슷한 색깔의 픽셀 묶음이 나왔다면, 해당 값을 pixelList에 저장한다.
         pixelList.append(pixelLink)
@@ -185,17 +160,18 @@ def pixelLinkList(img):
         if len(pixelPosition) > 0:
             i = pixelPosition[0][0]
             j = pixelPosition[0][1]
+
         else:
             break
 
-    # print(pixelList)
+    # 비슷한 색의 그룹이라 묶인 pixelList를 표시하기
     for k in range(0, len(pixelList)):
         red = randint(0, 255)
         green = randint(0, 255)
         blue = randint(0, 255)
 
         for l in range(0, len(pixelList[k])):
-            cv.line(imgOriginal, (pixelList[k][l][0], pixelList[k][l][1]), (pixelList[k][l][0], pixelList[k][l][1]), (red, green, blue), 1)
+            cv.line(imgOriginal, (pixelList[k][l][0], pixelList[k][l][1]), (pixelList[k][l][0], pixelList[k][l][1]), (blue, green, red), 1)
     
     print('pixelList 전체 묶음 갯수 : ', len(pixelList))
     print('1번째 pixel 묶음 pixel 갯수 : ', len(pixelList[0]))
@@ -209,6 +185,8 @@ def pixelLinkList(img):
     
     return len(pixelList)
 
+# pixelList의 1번째 그룹은, 전체 이미지에서 테두리가 없는 모든 영역을 하나로 다 묶는다.
+# 따라서, 이 pixelList 1번째 리스트의 값을 뺀 나머지 영역을 검출해내면, 테두리가 있는 영역 부분만 검출된다.
 def reverseFirstLayer(img):
     startTime = time.time()
 
@@ -365,17 +343,10 @@ def singleLineDraw(img, x, y, imgCopy):
             positionX += 1
 
     # 유사한 색이라고 인정하는 색의 거리, findTwoColorDistanceHSV 메소드의 distance 값에 이용된다.
-    similarityDistance = 35
+    similarityDistance = 60
 
     startPointX = x
     startPointY = y
-
-    ##################################################
-    # # 비슷한 색깔끼리 하나의 집합으로 묶이는 리스트
-    # pixelList = []
-
-    # while True:
-    ##################################################
         
     # 원점과 비교할 좌표값
     nextPointX = startPointX
@@ -402,6 +373,9 @@ def singleLineDraw(img, x, y, imgCopy):
     # 비교점이 바뀌었는지 체크하는 값
     moveFlag = False
     moveCount = 0
+    samePointCount = False
+    print(findTwoColorDistanceHSV(pixelInfoHSV[162][191], pixelInfoHSV[163][191]))
+    
     # 시작점과 현재 비교점의 색상이 얼마나 차이나는지 비교한다.
     # 차이값이 similarityDistance값 이하면 비슷한 색으로 취급하고, 하나의 영역으로 묶는다.
     # 이미 묶인 좌표는 중복체크를 해서 제외한다.
@@ -427,6 +401,7 @@ def singleLineDraw(img, x, y, imgCopy):
             if direction == 0:
                 if nextPointX > 0:
                     if similarityDistance >= findTwoColorDistanceHSV(pixelInfoHSV[startPointX][startPointY], pixelInfoHSV[nextPointX - 1][nextPointY]):
+                    # if similarityDistance >= findTwoColorDistanceHSV(pixelInfoHSV[nextPointX][nextPointY], pixelInfoHSV[nextPointX - 1][nextPointY]):
                         # 중복 체크
                         if pixelMap[nextPointX - 1, nextPointY] == False:
                             pixelLink.append((nextPointX - 1, nextPointY))
@@ -439,6 +414,7 @@ def singleLineDraw(img, x, y, imgCopy):
             elif direction == 1:
                 if nextPointX > 0 and nextPointY > 0:
                     if similarityDistance >= findTwoColorDistanceHSV(pixelInfoHSV[startPointX][startPointY], pixelInfoHSV[nextPointX - 1][nextPointY - 1]):
+                    # if similarityDistance >= findTwoColorDistanceHSV(pixelInfoHSV[nextPointX][nextPointY], pixelInfoHSV[nextPointX - 1][nextPointY - 1]):
                         # 중복 체크
                         if pixelMap[nextPointX - 1, nextPointY - 1] == False:
                             pixelLink.append((nextPointX - 1, nextPointY - 1))
@@ -452,6 +428,7 @@ def singleLineDraw(img, x, y, imgCopy):
             elif direction == 2:
                 if nextPointY > 0:
                     if similarityDistance >= findTwoColorDistanceHSV(pixelInfoHSV[startPointX][startPointY], pixelInfoHSV[nextPointX][nextPointY - 1]):
+                    # if similarityDistance >= findTwoColorDistanceHSV(pixelInfoHSV[nextPointX][nextPointY], pixelInfoHSV[nextPointX][nextPointY - 1]):
                         # 중복 체크
                         if pixelMap[nextPointX, nextPointY - 1] == False:
                             pixelLink.append((nextPointX, nextPointY - 1))
@@ -464,6 +441,7 @@ def singleLineDraw(img, x, y, imgCopy):
             elif direction == 3:
                 if nextPointX < width - 1 and nextPointY > 0:
                     if similarityDistance >= findTwoColorDistanceHSV(pixelInfoHSV[startPointX][startPointY], pixelInfoHSV[nextPointX + 1][nextPointY - 1]):
+                    # if similarityDistance >= findTwoColorDistanceHSV(pixelInfoHSV[nextPointX][nextPointY], pixelInfoHSV[nextPointX + 1][nextPointY - 1]):
                         # 중복 체크
                         if pixelMap[nextPointX + 1, nextPointY - 1] == False:
                             pixelLink.append((nextPointX + 1, nextPointY - 1))
@@ -477,6 +455,7 @@ def singleLineDraw(img, x, y, imgCopy):
             elif direction == 4:
                 if nextPointX < width - 1:
                     if similarityDistance >= findTwoColorDistanceHSV(pixelInfoHSV[startPointX][startPointY], pixelInfoHSV[nextPointX + 1][nextPointY]):
+                    # if similarityDistance >= findTwoColorDistanceHSV(pixelInfoHSV[nextPointX][nextPointY], pixelInfoHSV[nextPointX + 1][nextPointY]):
                         # 중복 체크
                         if pixelMap[nextPointX + 1, nextPointY] == False:
                             pixelLink.append((nextPointX + 1, nextPointY))
@@ -489,6 +468,7 @@ def singleLineDraw(img, x, y, imgCopy):
             elif direction == 5:
                 if nextPointX < width - 1 and nextPointY < height - 1:
                     if similarityDistance >= findTwoColorDistanceHSV(pixelInfoHSV[startPointX][startPointY], pixelInfoHSV[nextPointX + 1][nextPointY + 1]):
+                    # if similarityDistance >= findTwoColorDistanceHSV(pixelInfoHSV[nextPointX][nextPointY], pixelInfoHSV[nextPointX + 1][nextPointY + 1]):
                         # 중복 체크
                         if pixelMap[nextPointX + 1, nextPointY + 1] == False:
                             pixelLink.append((nextPointX + 1, nextPointY + 1))
@@ -502,6 +482,7 @@ def singleLineDraw(img, x, y, imgCopy):
             elif direction == 6:
                 if nextPointY < height - 1:
                     if similarityDistance >= findTwoColorDistanceHSV(pixelInfoHSV[startPointX][startPointY], pixelInfoHSV[nextPointX][nextPointY + 1]):
+                    # if similarityDistance >= findTwoColorDistanceHSV(pixelInfoHSV[nextPointX][nextPointY], pixelInfoHSV[nextPointX][nextPointY + 1]):
                         # 중복 체크
                         if pixelMap[nextPointX, nextPointY + 1] == False:
                             pixelLink.append((nextPointX, nextPointY + 1))
@@ -514,6 +495,7 @@ def singleLineDraw(img, x, y, imgCopy):
             elif direction == 7:
                 if nextPointX > 0 and nextPointY < height - 1:
                     if similarityDistance >= findTwoColorDistanceHSV(pixelInfoHSV[startPointX][startPointY], pixelInfoHSV[nextPointX - 1][nextPointY + 1]):
+                    # if similarityDistance >= findTwoColorDistanceHSV(pixelInfoHSV[nextPointX][nextPointY], pixelInfoHSV[nextPointX - 1][nextPointY + 1]):
                         # 중복 체크
                         if pixelMap[nextPointX - 1, nextPointY + 1] == False:
                             pixelLink.append((nextPointX - 1, nextPointY + 1))
@@ -529,9 +511,12 @@ def singleLineDraw(img, x, y, imgCopy):
 
                 # 바뀐 비교점이 시작점과 동일하다면, 한바퀴 돌아온 것이다. 반복을 종료한다.
                 if startPointX == nextPointX and startPointY == nextPointY:
-                    break
+                    if samePointCount:
+                        break
+                    else:
+                        samePointCount = True
                 
-                elif moveCount == 300000:
+                elif moveCount > 100000:
                     break
 
                 # 바뀐 비교점이 시작점과 다르다면, 다음번 진행할 방향값을 반시계 방향으로 90도 회전하고, directCount = 0 으로 한다.
@@ -550,45 +535,4 @@ def singleLineDraw(img, x, y, imgCopy):
         # 8방향을 모두 검색했으나, nextPoint를 찾을 수 없었다면, 반복을 종료한다.
         else:
             break
-    
-    # print(pixelLink)
-    # print('time : ', time.time() - startTime)
-    # cv.imshow('test', imgBlack)
-    # cv.waitKey(0)
-
-# 컨투어 찾기
-def findContour(img):
-    # 글자의 외각만 찾기, 좌표들은 contours에 들어있음
-    contours, hierarchy = cv.findContours(img, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
-
-    # 컨투어 반환
-    return contours, hierarchy
-
-startTime = time.time()
-img = cv.imread('hwang/imgSet/20200203/1.jpg')
-imgCopy = np.zeros_like(img)
-
-imgGrayscale = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-cv.imshow('real', imgGrayscale)
-
-# ret1, imgBinary1 = cv.threshold(imgGrayscale, 60, 255, cv.THRESH_BINARY)
-# cv.imshow('binary1', imgBinary1)
-
-# ret2, imgBinary2 = cv.threshold(imgGrayscale, 90, 255, cv.THRESH_BINARY)
-# cv.imshow('binary2', imgBinary2)
-
-# ret3, imgBinary3 = cv.threshold(imgGrayscale, 127, 255, cv.THRESH_BINARY)
-# cv.imshow('binary3', imgBinary3)
-
-contour, hierarchy = findContour(imgGrayscale)
-
-# cv.waitKey(0)
-print(len(contour))
-for i in range(0, len(contour)):
-    # print('i = ', i)
-    singleLineDraw(img, contour[i][0][0][0], contour[i][0][0][1], imgCopy)
-
-cv.imshow('test', imgCopy)
-print('time : ', time.time() - startTime)
-cv.waitKey(0)
 
