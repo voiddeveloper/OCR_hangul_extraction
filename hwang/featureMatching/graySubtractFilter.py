@@ -122,6 +122,32 @@ def createBlackImage(image):
 
     return draw_image_list
 
+# 검정색 이미지를 n배 크게 생성하기
+# hcount = 높이 배수 (ex: 2: 세로로 2배)
+# wcount = 넓이 배수 (ex: 2: 가로로 2배)
+def createBlackImageMultiple(image, hcount, wcount):
+    h,w,d = image.shape[:]
+    image = np.zeros((h * hcount, w * wcount, d), np.uint8)
+    color = tuple(reversed((0, 0, 0)))
+    image[:] = color
+
+    return image
+
+# 통 이미지에서 원하는 위치에 이미지 붙여넣기
+# dst = 통 이미지
+# src = 붙여넣을 이미지
+# h : 높이
+# w : 넓이
+# d : 깊이
+# col : 행 위치
+# row : 열 위치
+def showMultiImage(dst, src, h, w, d, col, row):
+    if d == 3:
+        dst[(col * h):(col * h) + h, (row * w):(row * w) + w] = src[0:h, 0:w] 
+    elif d == 1:
+        dst[(col * h):(col * h) + h, (row * w):(row * w) + w, 0] = src[0:h, 0:w] 
+        dst[(col * h):(col * h) + h, (row * w):(row * w) + w, 1] = src[0:h, 0:w] 
+        dst[(col * h):(col * h) + h, (row * w):(row * w) + w, 2] = src[0:h, 0:w] 
 
 def Filter_15(image):
     height, width = image.shape
@@ -190,14 +216,14 @@ def Filter_15(image):
 
         else:
             cimg = black[y:y + h + 1, x:x + w + 1]
-            cv2.imwrite(
-                'hwang/resultFolder/' + str(i) + '@@' +
-                str(area) + '@@' +
-                str(arc_len) + '@@' +
-                str(percent) + '@@' +
-                str(w) + '@@' +
-                str(h) + '.jpg',
-                cimg)
+            # cv2.imwrite(
+            #     'hwang/resultFolder/' + str(i) + '@@' +
+            #     str(area) + '@@' +
+            #     str(arc_len) + '@@' +
+            #     str(percent) + '@@' +
+            #     str(w) + '@@' +
+            #     str(h) + '.jpg',
+            #     cimg)
             point_list.append([x, y, w, h])
 
     return point_list
@@ -272,8 +298,30 @@ def xLineYLineAdd(img):
     # cv2.imshow('bgr_x_line_add_y_line_image', bgr_x_line_add_y_line_image)
     return bgr_x_line_add_y_line_image
 
+
+for i in range(1, 61):
+    image_path_bgrLine = 'hwang/resultFolder/bgrLine/' + str(i) + '.jpg'
+    image_path_subtract = 'hwang/resultFolder/subtract/' + str(i) + '.jpg'
+
+    bgr_image_bgrLine = cv2.imread(image_path_bgrLine)
+    bgr_image_subtract = cv2.imread(image_path_subtract)
+    height, width, depth = bgr_image_bgrLine.shape
+
+    background_image = createBlackImageMultiple(bgr_image_bgrLine, 1, 2)
+    showMultiImage(background_image, bgr_image_bgrLine, height, width, depth, 0, 0)
+    showMultiImage(background_image, bgr_image_subtract, height, width, depth, 0, 1)
+    
+    cv2.imshow('img', background_image)
+
+    cv2.imwrite(
+                # 'hwang/resultFolder/' + 'subtract' + str(i) + '@@' +
+                'hwang/resultFolder/' + str(i) + '.jpg', background_image)
+
+    cv2.waitKey(0)
+
+
 # 시간체크 시작
-for i in range(109, 110):
+for i in range(42, 43):
     start_time = time.time()
     # 이미지 경로
     image_path = 'hwang/imgSet/test_image/' + str(i) + '.jpg'
@@ -286,12 +334,16 @@ for i in range(109, 110):
     height, width, c = bgr_image.shape
     print(bgr_image.shape)
 
-    if width < 1000:
-        width *= 2
-        height *= 2
+    # 그림 리사이즈 배율
+    diameter = 1
 
-    # bgr
+    if width < 1000:
+        width *= diameter
+        height *= diameter
+
+    # # bgr
     bgr_image = cv2.resize(bgr_image, (width, height), interpolation=cv2.INTER_AREA)
+    background_image = createBlackImageMultiple(bgr_image, 2, 2)
 
     # bgr -> gray 변환
     gray_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2GRAY)
@@ -299,18 +351,18 @@ for i in range(109, 110):
 
     # bgr -> gray 변환 -> 외곽선 검출
     bgr_x_line_add_y_line_image = xLineYLineAdd(gray_image)
-    cv2.imshow('bgr_x_line_add_y_line_image', bgr_x_line_add_y_line_image)
+    # cv2.imshow('bgr_x_line_add_y_line_image', bgr_x_line_add_y_line_image)
+
+    th, original_bi_image = cv2.threshold(bgr_x_line_add_y_line_image, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+    # cv2.imshow('original_binary', original_bi_image)
 
     # bgr -> gray 변환 -> 외곽선 검출 -> (외곽선 이미지 - gray 변환 이미지)
     subtract_image = cv2.subtract(bgr_x_line_add_y_line_image, gray_image)
-    cv2.imshow('subtract_image', subtract_image)
+    # cv2.imshow('subtract_image', subtract_image)
 
     # bgr -> gray 변환 -> 외곽선 검출 -> (외곽선 이미지 - gray 변환 이미지) -> 이진화 처리 (임계값: OTSU)
     th, bi_image = cv2.threshold(bgr_x_line_add_y_line_image, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
-    cv2.imshow('binary', bi_image)
-
-    th, bi_image = cv2.threshold(bgr_x_line_add_y_line_image, 127, 255, cv2.THRESH_BINARY)
-    cv2.imshow('127binary', bi_image)
+    # cv2.imshow('binary', bi_image)
 
     # bgr -> gray 변환 -> 외곽선 검출 -> (외곽선 이미지 - gray 변환 이미지) -> 이진화 처리 (임계값: OTSU) -> 종켈레톤 적용
     # skel_image = skeletonize(bi_image)
@@ -323,6 +375,21 @@ for i in range(109, 110):
     draw_image = blackImageDraw(bi_image, black_image_list, bgr_image)
 
     cv2.imshow('result' + str(i), bgr_image)
+    showMultiImage(background_image, bgr_x_line_add_y_line_image, height, width, 1, 0, 0)
+    # showMultiImage(background_image, subtract_image, height, width, 1, 0, 1)
+    showMultiImage(background_image, bi_image, height, width, 1, 1, 0)
+    showMultiImage(background_image, bgr_image, height, width, 3, 1, 1)
+
+    background_image = cv2.resize(background_image, dsize=(0, 0), fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
+    cv2.imshow('img', background_image)
+
+    cv2.imwrite(
+                # 'hwang/resultFolder/' + 'subtract' + str(i) + '@@' +
+                'hwang/resultFolder/' + str(i) + '@@' +
+                str(diameter) + '@@' +
+                str(width) + '@@' +
+                str(height) + '.jpg',
+                background_image)
 
     print('컨투어 개수 : ', contour_count)
     # 시간측정 끝
