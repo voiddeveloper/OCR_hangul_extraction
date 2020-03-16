@@ -5,6 +5,8 @@ import numpy as np
 # 목표
 # 특정한 글씨 이미지를 선정하고, 해당 이미지의 특징점들을 최대한 다양하게 뽑아낸다.
 # 여기서 뽑는 특징점은 각 contour들의 area, perimeter, aspect_ratio, extent와 이미지 전체의 width, height 가 있다.
+
+# hwang/imgSet/test_image/14.jpg 의 '가'를 crop한 이미지
 #################################################################################
 
 # 컨투어 찾기
@@ -62,8 +64,7 @@ def showMultiImage(dst, src, h, w, d, col, row):
 
 
 ## main 시작 ##
-
-for i in range(1, 6):
+for i in range(1, 2):
     # 이미지 경로
     image_path = 'hwang/imgSet/standard/00'+ str(i) + '.png'
 
