@@ -25,7 +25,7 @@ def similarColorBinding(image, devide):
     height, width, channel = image.shape
 
     color_list = []
-
+ 
     for i in range(height):
         for j in range(width):
             b, g, r = image[i][j]
