@@ -126,6 +126,7 @@ cv.rectangle(imgStandard, (minmaxPoint[0], minmaxPoint[1]), (minmaxPoint[2], min
 # 이러한 예외사항이 폰트마다 전부 다르다. (굴림 폰트에서는 붙어있지 않는데, 나눔 폰트에서는 붙어있는 등)
 # 따라서 각 폰트별, 모든 한글 글씨를 전부 확인 후 분류해야 한다.
 # 이 분류 작업 도중 시간 소모가 너무 크다고 판단해서 이후 작업을 중단하게 되었다.
+# 이 후 작업은 combineContours.py로 넘어간다.
 
 cv.imshow('imgStandard', imgStandard)
 cv.waitKey(0)
