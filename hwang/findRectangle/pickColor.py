@@ -2,7 +2,14 @@ import math
 import cv2 as cv
 import numpy as np
 
+##############################################################################################################################
+# rectangleDectection.py 작업의 개량형
 # 목표 : 화면에서 네모를 찾아라.
+# rectangleDectection.py 에서는 이미지를 바로 binary 처리 했었는데, 이 경우 손실되는 색 정보가 너무 많다.
+# 따라서 binary 처리하지 않고, hsv 색상값을 그대로 이용하되, 특정한 색상만 인식하는 mask를 덮어준다.
+# 이후에는 기존 rectangleDection.py와 동일한 방식으로 네모를 찾는다.
+
+# ## 방법 ##
 # 1. 이미지를 읽는다.
 # 2. 읽어온 이미지를 HSV로 분류하고, 전체 픽셀 정보를 저장한다.
 # 3. 기준 색상을 정하고, 기준색상과 다른 픽셀 값을 찾기 시작한다. (기준 색상은 (0,0) 좌표의 색상)
@@ -10,8 +17,8 @@ import numpy as np
 # 5. mask가 적용된 이미지를 grayscale -> binary 처리한다. 이제 해당 색상만 보이는 이미지가 나온다.
 # 6. 이미지 값이 존재하는 폐곡선 영역을 찾는다. 선이 너무 세밀하면 안되기 때문에 모폴로지를 적용해서 적당히 선을 뭉갠다. 
 # 7. 해당 폐곡선의 꼭지점 갯수를 구한다. 꼭지점의 갯수가 4개인 것이 네모이다.
+##############################################################################################################################
 
-###############################################################
 # 전역 변수 모음
 # 테스트할 파일 이름
 testFile = 'hwang/imgSet/findRectangle/real_2.jpg'
@@ -229,7 +236,6 @@ while j < height:
             resultImage = makeMaskImg(roiColor[0], roiColor[1], roiColor[2])
             # 해당 mask가 적용된 binary 이미지 생성
             resultImageBinary = changeBinaryImage(resultImage)
-
             # binary 이미지를 이용해서 네모가 있는지 판별
             findContoursInfo(copyImage, resultImage, resultImageBinary)
         i += 1
