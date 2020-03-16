@@ -15,5 +15,6 @@
 
 
 * 실험용 데이터 셋
+    * MNIST_data: MNIST 손글씨 데이터 셋
     * dataSet: 머신러닝용 데이터 셋
     * imgSet: 과제용 이미지 셋
