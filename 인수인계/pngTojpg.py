@@ -6,3 +6,4 @@ from os import rename, listdir
 for i in listdir('C:/ttf_result/malgun/'):
     new_file = i.split(".")[0]
     rename(folder_path + i, folder_path + new_file + ".jpg")
+ 
