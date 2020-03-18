@@ -1,11 +1,30 @@
 import cv2
 import numpy as np
+
+############################################################################
+# 2020-01-27 종영이 코드를 이어 받아서 작업
+# contour 내부의 contour 정보를 얻어내기 위한 코드
+#
+# ## 목표 ##
+# 글씨는 'ㅁ' 처럼 내부에 구멍이 뚫린 글씨들이 많다.
+# contour의 색상 값을 구할 때, 이런 구멍 부분을 제거해야 원하는 값을 구할 수 있다.
+# 따라서 contour의 자식 영역 부분을 삭제할 수 있어야 한다.
+#
+# ## 방법 ##
+# contour의 부모/자식 관계를 구한다.
+# 자식 영역의 contour 부분에 검은색을 칠한다. (binary 이미지이기 때문에 검은색을 칠하면 없는 영역으로 인식할 것이다.)
+# 칠하는 과정이 끝나면, 부모 contour의 영역을 다시 계산한다.
+############################################################################
+
+# 이미지 읽기 및 contour, hierarchy 구하기
 img=cv2.imread("hwang/imgSet/test1_1.png")
 img2=img.copy()
 img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 ret, img = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY)
 contours, hierarchy = cv2.findContours(img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
+# count: 자신의 position값을 확인하기 위한 용도
+# parentList: 자식이 있는 contour 정보
 count = 0
 parentList = []
 for i in hierarchy[0]:
@@ -18,7 +37,7 @@ for i in hierarchy[0]:
 
 print("결과 :", parentList)
 
-
+# listCount: 부모 contour인지 확인하기 위한 용도
 listCount = 0
 #컨투어 내부에 있는 픽셀 색
 for v,i in enumerate(range(len(contours))):
