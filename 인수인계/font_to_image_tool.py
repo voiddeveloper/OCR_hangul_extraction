@@ -19,7 +19,7 @@ running메서드 안에 주석 확인
 """
 exe파일로 만들고싶다면 pyinstaller 
 """
-
+ 
 import sys, os
 import numpy as np
 import matplotlib.pyplot as plt
