@@ -1,6 +1,5 @@
 import cv2 as cv
 import glob
-import random
 import matplotlib.pyplot 
 
 #############################################################################################
@@ -10,13 +9,11 @@ import matplotlib.pyplot
 images = glob.glob("C:\\Users\\narun\\Desktop\\malgun\\*.*")
 count = 0
 size = len(images)
-randomCount = random.randrange(1, size)
 tempMaxRate = 0
 tempMinRate = 1
 
 for fname in images:
     count += 1
-    # if count < randomCount and count > randomCount - 5:
     # '운' = 종횡비 : 1.0
     # '훈' = 종횡비 : 1.0
     if fname == 'C:\\Users\\narun\\Desktop\\malgun\\10953.png':
@@ -33,7 +30,6 @@ for fname in images:
         for i in range(len(contours)):
             # contours로 찾아낸 물체
             cnt = contours[i]
-            area = cv.contourArea(cnt)
             x, y, w, h = cv.boundingRect(cnt)
             # 찾아낸 영역의 x,y,w,h값 저장
             boxPoint.append(cv.boundingRect(cnt))
