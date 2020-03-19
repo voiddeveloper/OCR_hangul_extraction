@@ -87,10 +87,10 @@ def colorFilter(img_color, color_dict):
     return mask
 
 
-# 컨투어 찾기
-def findContour(image):
+# 컨투어 찾기 - 이진화 이미지가 들어온다.
+def findContour(binary_image):
     # 글자의 외각만 찾기, 좌표들은 contours에 들어있음
-    contours, hierarchy = cv2.findContours(image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    contours, hierarchy = cv2.findContours(binary_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     # 컨투어 반환
     return contours, hierarchy
