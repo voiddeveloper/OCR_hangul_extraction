@@ -31,8 +31,6 @@ OpenCv 함수는 공식 홈페이지인 https://docs.opencv.org/master/d6/d00/tu
 
 2. 일치율을 계산하는 테스트 방식이 올바른 것인지 잘 모르겠음. 테스트 하는 방법에 대해서 연구가 필요함.
 
-consonant 단어 : 자음
-vowel 단어 : 모음
 
 """
 
@@ -287,22 +285,19 @@ def image_comparison(my_image, op_image):
     my_image_copy = my_image.copy()
     op_image_copy = op_image.copy()
 
-    # cv2.imshow('1',image1_copy)
-    # cv2.imshow('2',image2_copy)
-    # cv2.waitKey(0)
     count = 0
 
     sum = thumbnail_width * thumbnail_height
 
-    image1_pixel_count = 0
-    image2_pixel_count = 0
+    base_image_pixel_count = 0
+    opponent_image_pixel_count = 0
 
     for i in range(thumbnail_width):
         for j in range(thumbnail_height):
             if my_image_copy[i][j] == 0:
-                image1_pixel_count += 1
+                base_image_pixel_count += 1
             if op_image_copy[i][j] == 0:
-                image2_pixel_count += 1
+                opponent_image_pixel_count += 1
             # print("%3d"%image1_copy[i][j], end=" ")
         # print('\n')
 
@@ -313,17 +308,17 @@ def image_comparison(my_image, op_image):
                 count += 1
         # print('\n')
 
-    print(image1_pixel_count, image2_pixel_count)
+    print(base_image_pixel_count, opponent_image_pixel_count)
 
     # 오차율 적용
-    error = image1_pixel_count / 3
+    error = base_image_pixel_count / 3
 
-    pixel_range_min = int(image1_pixel_count - error)
-    pixel_range_max = int(image1_pixel_count + error)
+    pixel_range_min = int(base_image_pixel_count - error)
+    pixel_range_max = int(base_image_pixel_count + error)
 
     print(pixel_range_min, pixel_range_max, (count * 100) / sum)
 
-    if pixel_range_min > image2_pixel_count or image2_pixel_count > pixel_range_max:
+    if pixel_range_min > opponent_image_pixel_count or opponent_image_pixel_count > pixel_range_max:
         print('사이')
         return 0
 
