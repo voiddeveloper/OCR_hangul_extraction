@@ -114,31 +114,6 @@ def findMinMaxPoint(bi_image, image, contour, hierarchy, filter_variable, color_
             'height_limit_pixel']:
             continue
         else:
-
-            # """
-            # 2번 필터
-            # 네모영역안의 픽셀을 검사해서 15~50% 미만이면 글자로 판단 그리고 95%이상이면 글자로 판단( ㅡ, ㅣ ), 그렇지 않으면 잡음으로 처리한다.
-            # * 글자 ( 자음, 모음 ) 영역을 그렸을때 픽셀양이 45% 이하인걸 확인.
-            # """
-            # white_sum = 0
-            #
-            # for height in range(y_min, y_max):
-            #     for width in range(x_min, x_max):
-            #         if bi_image[height][width] == 255:
-            #             white_sum += 1
-            #
-            # pixel_sum = ((white_sum) / ((x_max - x_min) * (y_max - y_min)))
-            #
-            # # 픽셀양이 10~50% 이하이면 네모영역 그림
-            # if (pixel_sum * 100 <= 55 and pixel_sum * 100 >= 10) or pixel_sum * 100 > 95:
-            #
-            # """
-            # 3번 필터
-            # 정사각형 제외 - 맑은고딕은 네모꼴임 그래서 자음 모음이 정사각형 모양이 나올 수 없음
-            # """
-            # if (x_max - x_min) / (y_max - y_min) == 1.0:
-            #     continue
-
             # 픽셀의 색을 넣을 리스트
             ll = []
             # 이미지와 동일한 크기의 검은색 이미지를 만든다
