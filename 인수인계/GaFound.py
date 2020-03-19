@@ -23,8 +23,8 @@
 
 아래 코드에 있는 find_contour(), boundingRect()등의
 OpenCv 함수는 공식 홈페이지인 https://docs.opencv.org/master/d6/d00/tutorial_py_root.html에서 참고하면 된다.
- 
-문제점 : 
+
+문제점 :
 1.
 '가' 라는 글자와 '카'라는 글자가 되게 비슷하여 일치율이 높게 나옴
 '가', '카'를 구분지을 수 있는 알고리즘을 추가하거나 다른 방식으로 찾아야함.
@@ -44,7 +44,7 @@ thumbnail_height = 100
 
 # rgb 이미지가 들어왔을때, 해당 이미지를 이진화 이미지로 바꾸고 컨투어(특징점)를 찾는다.
 # 컨투어에 대한 설명은 아래 main문에 작성 해놓음.
-def 이미지_이진화_및_컨투어_찾기(image):
+def findContour(image):
     # rgb -> gray ( 이미지 변환 )
     img_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
@@ -60,11 +60,11 @@ def 이미지_이진화_및_컨투어_찾기(image):
 
 
 # 이미지에서 찾은 특징점을 가지고 자음의 특성을 가진 리스트, 모음의 특성을 가진 리스트로 구분하는 메서드
-def 자음_모음_컨투어_구분(contour):
+def consonantAndVowelContourDevide(contour):
     contour = contour.copy()
 
-    자음_contour_list = []  # 자음 컨투어 리스트가 담길 공간
-    모음_contour_list = []  # 모음 컨투어 리스트가 담길 공간
+    consonant_contour_list = []  # 자음 컨투어 리스트가 담길 공간
+    vowel_contour_list = []  # 모음 컨투어 리스트가 담길 공간
 
     for i, con in enumerate(contour):
         x, y, x_width, y_height = cv2.boundingRect(con)
@@ -73,47 +73,47 @@ def 자음_모음_컨투어_구분(contour):
         # 가로의 길이가 세로의 2배보다 짧으면 모음
         # 세로의 길이가 가로의 1.7배보다 짧으면 모음
         if x_width * 2 < y_height or y_height * 1.7 < x_width:
-            모음_contour_list.append(con)
+            vowel_contour_list.append(con)
 
         # 자음 조건 : 모음이 아닌것은 우선 자음으로 판단한다.
         else:
-            자음_contour_list.append(con)
+            consonant_contour_list.append(con)
 
-    return 자음_contour_list, 모음_contour_list
+    return consonant_contour_list, vowel_contour_list
 
 
 """ 
 찾은 자음을 가지고 오른쪽을 탐색하는 메서드 
 ex ) 가, 나 와 같이 ㄱ, ㄴ 의 오른쪽에 있는 ㅏ 라는 모음을 찾음
 """
-def 자음과_연관된_모음찾기(contour_list_자음, contour_list_모음):
-    연관_list_contour_index = []
+def associatedCosonantWithVowel(contour_list_consonant, contour_list_vowel):
+    connection_list_contour_index = []
     new_contour_list = []
-    temp_자음 = []
-    temp_모음 = []
+    temp_consonant = []
+    temp_vowel = []
 
-    for 자음_index, 자음_contour in enumerate(contour_list_자음):
-        x, y, x_width, y_height = cv2.boundingRect(자음_contour)
+    for consonant_index, consonant_contour in enumerate(contour_list_consonant):
+        x, y, x_width, y_height = cv2.boundingRect(consonant_contour)
 
-        for 모음_index, 모음_contour in enumerate(contour_list_모음):
-            for j in 모음_contour:
+        for vowel_index, vowel_contour in enumerate(contour_list_vowel):
+            for j in vowel_contour:
 
                 # 자음의 x 최대 부터 자음의 ( 가로폭 / 2 ) 만큼 더 오른쪽으로 갔을때, 모음이 있다면?
                 if j[0][0] > x + x_width and j[0][0] < x + x_width + int((x_width)):
-                    연관_list_contour_index.append([자음_index, 모음_index])
+                    connection_list_contour_index.append([consonant_index, vowel_index])
                     break
 
-    for index, contour_index in enumerate(연관_list_contour_index):
-        for i in contour_list_자음[contour_index[0]]:
+    for index, contour_index in enumerate(connection_list_contour_index):
+        for i in contour_list_consonant[contour_index[0]]:
             # print(i[0])
-            temp_자음.append(i[0])
+            temp_consonant.append(i[0])
 
-        for i in contour_list_모음[contour_index[1]]:
+        for i in contour_list_vowel[contour_index[1]]:
             # print(i[0])
-            temp_모음.append(i[0])
-        new_contour_list.append([temp_자음 + temp_모음])
-        temp_자음.clear()
-        temp_모음.clear()
+            temp_vowel.append(i[0])
+        new_contour_list.append([temp_consonant + temp_vowel])
+        temp_consonant.clear()
+        temp_vowel.clear()
     # print(len(new_contour_list))
 
     return new_contour_list
@@ -354,8 +354,8 @@ if __name__ == '__main__':
     # 비교대상과 비교할 이미지에서 모두 컨투어를 찾는다.
     # ~~_binary는 이진화 처리된 이미지
     # ~~_contour는 물체의 특징점 좌표를 리스트 형태로 가지고 있음
-    my_image_binary, my_image_contour = 이미지_이진화_및_컨투어_찾기(my_image)
-    op_image_binary, op_image_contour = 이미지_이진화_및_컨투어_찾기(opponent_image)
+    my_image_binary, my_image_contour = findContour(my_image)
+    op_image_binary, op_image_contour = findContour(opponent_image)
 
     # 비교 대상 이진화 이미지에서 컨투어를 찾은후, OpenCV의 boundingRect(), rectangle()를 사용한다.
     # boundingRect() -> 찾은 특징점에서 x좌표, y좌표, 가로길이, 세로길이를 반환해준다.
@@ -372,13 +372,13 @@ if __name__ == '__main__':
 
     # 자음_모음_컨투어_구분() - 찾은 컨투어(특징점) 리스트를 가지고, 자음과 비슷한지 모음과 비슷한지 구분을 한다.
     # 자음과 모음은 구분은 해당 글자의 가로길이와 세로길이의 비율로 판단한다.
-    my_image_자음_contour_list, my_image_모음_contour_list = 자음_모음_컨투어_구분(my_image_contour)
-    op_image_자음_contour_list, op_image_모음_contour_list = 자음_모음_컨투어_구분(op_image_contour)
+    my_image_consonant_contour_list, my_image_vowel_contour_list = consonantAndVowelContourDevide(my_image_contour)
+    op_image_consonant_contour_list, op_image_vowel_contour_list = consonantAndVowelContourDevide(op_image_contour)
 
     """############## 4. 자음을 찾은 후, 그와 연관된 주변 모음을 찾아서 하나의 글자로 구분짓기 #############"""
     # 자음으로 부터 모음을 찾아서, 자음+모음이 완성되는 글자만 찾는다.
-    my_new_contour_list = 자음과_연관된_모음찾기(my_image_자음_contour_list, my_image_모음_contour_list)
-    op_new_contour_list = 자음과_연관된_모음찾기(op_image_자음_contour_list, op_image_모음_contour_list)
+    my_new_contour_list = associatedCosonantWithVowel(my_image_consonant_contour_list, my_image_vowel_contour_list)
+    op_new_contour_list = associatedCosonantWithVowel(op_image_consonant_contour_list, op_image_vowel_contour_list)
 
     """########## 5. 비교 이미지와 비교당할이미지에서 찾은 글자를 100,100으로 리사이즈하는 과정.   ###############"""
     """################################### * 두개의 이미지 비교를 위해   #####################################"""
