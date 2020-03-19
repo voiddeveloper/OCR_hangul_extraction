@@ -213,7 +213,7 @@ class Mainwindow(QMainWindow):
                 tt = threading.Thread(target=self.tesseract, args=(self.fonttext.toPlainText(), 'save',))
                 tt.start()
 
-    # 드래그앤드랍 메소드
+    # 드래그앤드랍을 할 수 있게 해주는 메소드
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
             event.accept()
