@@ -13,4 +13,4 @@ for i in listdir(folder_path):
     new_file = i.split(".")[0]
     rename(folder_path + i, folder_path + new_file + ".jpg")
   
- 
+  
