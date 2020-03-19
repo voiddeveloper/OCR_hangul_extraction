@@ -14,3 +14,4 @@ for i in listdir(folder_path):
     rename(folder_path + i, folder_path + new_file + ".jpg")
   
   
+ 
