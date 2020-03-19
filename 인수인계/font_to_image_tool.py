@@ -117,7 +117,7 @@ class back_window(QMainWindow):
         start = "AC00"
         end = "D7A3"
         name= 'full'
-
+ 
  
         # 2. 자음과 모음만 이미지화 시키고싶다면 하단 start,end,name 주석 풀기
         #start 와 end 는 글자 유니코드의 범위이다
