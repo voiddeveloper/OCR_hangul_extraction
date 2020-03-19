@@ -224,7 +224,7 @@ class Mainwindow(QMainWindow):
     # 드래그앤드랍 이벤트
     def dropEvent(self, event):
         global fileList_Path
-        # 드래그앤드랍으로 
+        # 드래그앤드랍으로
         fileList_Path = []
         self.image_list.setText("")
 
@@ -265,6 +265,7 @@ class Mainwindow(QMainWindow):
         elif self.eng_radio.isChecked():
             msg = "영 어"
 
+    #activ = 사용자가 어떤 버튼을 클릭 했는지 (실행 or 저장)
     def google_(self, active):
         print('구글')
 
@@ -290,16 +291,16 @@ class Mainwindow(QMainWindow):
             # 이미지 1장에는 글자의 좌표를 받아 박스를 그리고
             # 나머지 1장에는 ocr 인식후 결과를 이미지에 그린다
             img = cv2.imdecode(np.fromfile(str(va), dtype=np.uint8), cv2.IMREAD_COLOR)
-            img1 = cv2.imdecode(np.fromfile(str(va), dtype=np.uint8), cv2.IMREAD_COLOR)
+            result_img = cv2.imdecode(np.fromfile(str(va), dtype=np.uint8), cv2.IMREAD_COLOR)
 
             img_pil = Image.fromarray(img)
             draw = ImageDraw.Draw(img_pil)
 
             text = ''
-            for i, d in enumerate(labels):
-                line = d.bounding_poly.vertices
+            for i, value in enumerate(labels):
+                line = value.bounding_poly.vertices
                 if i == 0:
-                    text = d.description
+                    text = value.description
 
                 """구글 api의 결과값을 토대로 글씨라고 추측되는 영역을 네모박스 치는 부분"""
                 cv2.line(img, (line[0].x, line[0].y), (line[1].x, line[1].y), (0, 0, 255), 2)
@@ -311,9 +312,9 @@ class Mainwindow(QMainWindow):
                     # fontpath  = 전역변수로 선언해놓은 폰트의 경로
                     # 이미지위에 글씨를 쓰는 부분
                     font = ImageFont.truetype(fontpath, 20)
-                    draw.text((x, y), str(d.description), font=font, fill=(0, 0, 255, 255))
+                    draw.text((x, y), str(value.description), font=font, fill=(0, 0, 255, 255))
 
-            img1 = np.array(img_pil)
+            result_img = np.array(img_pil)
 
             """
             run 클릭시 박스를 친 이미지 , 결과를 그린 이미지 2장이 순서대로 출력되고
@@ -324,13 +325,13 @@ class Mainwindow(QMainWindow):
                 cv2.imshow("google", img)
                 cv2.waitKey(0)
                 cv2.destroyAllWindows()
-                cv2.imshow("google", img1)
+                cv2.imshow("google", result_img)
                 cv2.waitKey(0)
                 cv2.destroyAllWindows()
             else:
                 if not (os.path.isdir('google_result')):
                     os.makedirs(os.path.join('google_result'))
-                result, n = cv2.imencode(
+                result, name = cv2.imencode(
                     'google_result/' + str(va).split("/")[-1].split(".")[0] + "_local" + ".png", img,
                     params=None)
                 # 이미지 2장을 저장하는부분
@@ -338,15 +339,15 @@ class Mainwindow(QMainWindow):
                     with open(
                             'google_result/' + str(va).split("/")[-1].split(".")[0] + "_local" + ".png",
                             mode='w+b') as f:
-                        n.tofile(f)
-                result, n = cv2.imencode(
-                    'google_result/' + str(va).split("/")[-1].split(".")[0] + "_reco" + ".png", img1,
+                        name.tofile(f)
+                result, name = cv2.imencode(
+                    'google_result/' + str(va).split("/")[-1].split(".")[0] + "_reco" + ".png", result_img,
                     params=None)
                 if result:
                     with open(
                             'google_result/' + str(va).split("/")[-1].split(".")[0] + "_reco" + ".png",
                             mode='w+b') as f:
-                        n.tofile(f)
+                        name.tofile(f)
 
                 # 결과 텍스트를 저장하는 부분
                 text_file = open(
@@ -355,8 +356,10 @@ class Mainwindow(QMainWindow):
                 text_file.write(str(end - start) + "\n" + text)
                 text_file.close()
 
+    #activ = 사용자가 어떤 버튼을 클릭 했는지 (실행 or 저장)
     def kakao(self, active):
         print("카카오")
+        #최대 반환값의 갯수
         LIMIT_BOX = 1024
 
         for va in fileList_Path:
@@ -378,12 +381,13 @@ class Mainwindow(QMainWindow):
 
             # 카카오api를 이용한 결과값 반환
             # ocr의 결과 값 반환 (이미지내에 있는  글씨)
-            output1 = self.kakao_ocr_recognize(image_path, boxes, appkey).json()
+            result_output = self.kakao_ocr_recognize(image_path, boxes, appkey).json()
             end = time.time()
             self.time_text.append(str(end - start))
 
+            #api의 결과 (반환되는 글자의 박스 위치)
             output_xy = []
-            print(output1)
+            print(result_output)
 
             print("-------------------------")
             print(output)
@@ -391,8 +395,10 @@ class Mainwindow(QMainWindow):
 
             img = cv2.imdecode(np.fromfile(str(image_path), dtype=np.uint8), cv2.IMREAD_COLOR)
 
-            img_re = cv2.imdecode(np.fromfile(str(image_path), dtype=np.uint8), cv2.IMREAD_COLOR)
-            ex_list = []
+            result_img = cv2.imdecode(np.fromfile(str(image_path), dtype=np.uint8), cv2.IMREAD_COLOR)
+
+            # 카카오에서 반환한 이미지의 결과를 저장 하는 리스트
+            result_list = []
             print(len(output['result']['boxes']))
             # 글자의 좌표를 가지고 이미지에 박스를 그리는 부분
             for f, i in enumerate(output['result']['boxes']):
@@ -425,36 +431,36 @@ class Mainwindow(QMainWindow):
                             mode='w+b') as f:
                         n.tofile(f)
 
-            print(output1)
-            print(len(output1['result']['recognition_words']))
+            print(result_output)
+            print(len(result_output['result']['recognition_words']))
 
             # ocr의 결과 를 가지고 이미지에 글씨를 쓰는 부분
             font = ImageFont.truetype(fontpath, 20)
-            img_pil = Image.fromarray(img_re)
+            img_pil = Image.fromarray(result_img)
             draw = ImageDraw.Draw(img_pil)
-            print(output1['result']['recognition_words'])
-            ex_list = output1['result']['recognition_words']
-            ex_list = list(reversed(ex_list))
-            print(ex_list)
+            print(result_output['result']['recognition_words'])
+            result_list = result_output['result']['recognition_words']
+            result_list = list(reversed(result_list))
+            print(result_list)
             for i, v in enumerate(output_xy):
                 (x, y) = (v[0], v[1])
                 try:
-                    draw.text((x, y), str(output1['result']['recognition_words'][i]), font=font, fill=(0, 0, 255, 255))
+                    draw.text((x, y), str(result_output['result']['recognition_words'][i]), font=font, fill=(0, 0, 255, 255))
                 except IndexError:
                     pass
 
-            img1 = np.array(img_pil)
+            result_img = np.array(img_pil)
 
             # 실행을 클릭했을때는 그냥 보여주기만함
             if 'run' in active:
-                cv2.imshow('img', img1)
+                cv2.imshow('img', result_img)
                 cv2.waitKey(0)
                 cv2.destroyAllWindows()
 
             # 저장을 클릭했을때 이미지의 결과 (txt) 파일과 글씨가 그려진 이미지를 저장
             else:
                 result, n = cv2.imencode(
-                    'kakao_result/' + str(va).split("/")[-1].split(".")[0] + "_reco" + ".png", img1,
+                    'kakao_result/' + str(va).split("/")[-1].split(".")[0] + "_reco" + ".png", result_img,
                     params=None)
                 if result:
                     #
@@ -463,7 +469,7 @@ class Mainwindow(QMainWindow):
                             mode='w+b') as f:
                         n.tofile(f)
                 text = ''
-                for v in ex_list:
+                for v in result_list:
                     text = text + " " + v
                 text_file = open(
                     'kakao_result/' + str(va).split("/")[-1].split(".")[0] + "_result.txt", 'w',
@@ -471,29 +477,31 @@ class Mainwindow(QMainWindow):
                 text_file.write(str(end - start) + "\n" + text)
                 text_file.close()
 
+    #activ = 사용자가 어떤 버튼을 클릭 했는지 (실행 or 저장)
+    #lang = 테서렉트의 언어 선택
     def tesseract(self, lang, active):
         print('테서렉트')
         print(fileList_Path)
         for va in fileList_Path:
             print(u"" + str(va))
             img = cv2.imdecode(np.fromfile(str(va), dtype=np.uint8), cv2.IMREAD_COLOR)
-            img1 = cv2.imdecode(np.fromfile(str(va), dtype=np.uint8), cv2.IMREAD_COLOR)
+            result_img = cv2.imdecode(np.fromfile(str(va), dtype=np.uint8), cv2.IMREAD_COLOR)
             start = time.time()
 
             # 실질적으로 테서렉트를 실행하는 부분
-            d = pytesseract.image_to_data(img, lang=lang, output_type=Output.DICT)
-            print(d)
+            result_data = pytesseract.image_to_data(img, lang=lang, output_type=Output.DICT)
+            print(result_data)
             end = time.time()
             self.time_text.append(str(end - start))
 
             # 테서렉트 결과 중에 데이터가 총 몇개가 출력됐는지 확인하는부분
-            n_boxes = len(d['level'])
+            n_boxes = len(result_data['level'])
 
             text = ""
 
             # 출력된 갯수만큼 반복문을 돌며 이미지위에 네모박스를 그리는 부분
             for i in (range(n_boxes)):
-                (x, y, w, h) = (d['left'][i], d['top'][i], d['width'][i], d['height'][i])
+                (x, y, w, h) = (result_data['left'][i], result_data['top'][i], result_data['width'][i], result_data['height'][i])
                 cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 2)
 
             # 실행하는부분
@@ -517,31 +525,31 @@ class Mainwindow(QMainWindow):
                             mode='w') as f:
                         n.tofile(f)
 
-                text = pytesseract.image_to_string(img1, lang=lang)
+                text = pytesseract.image_to_string(result_img, lang=lang)
 
             # 이미지에 결과 글씨 쓰기
             font = ImageFont.truetype(fontpath, 20)
-            img_pil = Image.fromarray(img1)
+            img_pil = Image.fromarray(result_img)
             draw = ImageDraw.Draw(img_pil)
             for i in range(n_boxes):
-                (x, y, w, h) = (d['left'][i], d['top'][i], d['width'][i], d['height'][i])
+                (x, y, w, h) = (result_data['left'][i], result_data['top'][i], result_data['width'][i], result_data['height'][i])
                 try:
 
-                    draw.text((x, y + h), d['text'][i], font=font, fill=(0, 0, 255, 255))
+                    draw.text((x, y + h), result_data['text'][i], font=font, fill=(0, 0, 255, 255))
                 except TypeError:
                     pass
-            img1 = np.array(img_pil)
+            result_img = np.array(img_pil)
             # run을 클릭해서 실행하는 경우
             # 글자가 그려진 이미지도 보여줌
             if 'run' in active:
-                cv2.imshow('img', img1)
+                cv2.imshow('img', result_img)
                 cv2.waitKey(0)
                 cv2.destroyAllWindows()
 
             else:
                 # save를 클릭해서 실행하는 경우 이미지와 결과 텍스트 저장
                 result, n = cv2.imencode(
-                    'tesseract_result/' + str(va).split("/")[-1].split(".")[0] + "_reco" + "_" + lang + ".png", img1,
+                    'tesseract_result/' + str(va).split("/")[-1].split(".")[0] + "_reco" + "_" + lang + ".png", result_img,
                     params=None)
                 if result:
                     with open(
