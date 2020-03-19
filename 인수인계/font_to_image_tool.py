@@ -17,7 +17,7 @@ running메서드 안에 주석 확인
 """
 
 """
-exe파일로 만들고싶다면 pyinstaller 
+exe파일로 만들고싶다면 pyinstaller 공부할 것 
 """
  
 import sys, os
@@ -31,6 +31,9 @@ from PyQt5.QtWidgets import  *
 check=False
 
 
+"""
+툴의  ui나 행동 전부가 들어있는 클래스
+"""
 class back_window(QMainWindow):
 
     def keyPressEvent(self, e):
@@ -39,9 +42,11 @@ class back_window(QMainWindow):
         from PyQt5.QtCore import Qt
 
 
-
+# 키보드 입력을 받는부분
+# F2를 누를시에 실행이된다
         if e.key() == Qt.Key_F2:
             if check == False:
+                # running 메서드를 실행하는 
                 t = threading.Thread(target=self.running)
                 t.start()
                 check=True
@@ -100,19 +105,22 @@ class back_window(QMainWindow):
 
         self.show()
 
-
+    # 폰트를 이미지화 시키는 메서드
+    # F2를 누를시 스레드로 실행된다 
     def running(self):
         global check
         co = "0 1 2 3 4 5 6 7 8 9 A B C D E F"
 
-        #폰트 11172자 전부의 범위
+        # 1. 11172 글자 전부 이미지화 시키는 범위
         #11172글자 전부를 이미지화 시키고싶다면 하단 start,end,name 주석 풀기
+        #start 와 end 는 글자 유니코드의 범위이다
         start = "AC00"
         end = "D7A3"
         name= 'full'
 
-        #폰트 자음과 모음의 범위
-        #자음과 모음만 이미지화 시키고싶다면 하단 start,end,name 주석 풀기
+ 
+        # 2. 자음과 모음만 이미지화 시키고싶다면 하단 start,end,name 주석 풀기
+        #start 와 end 는 글자 유니코드의 범위이다
         # start = "3131"
         # end = "318E"
         # name='mini'
