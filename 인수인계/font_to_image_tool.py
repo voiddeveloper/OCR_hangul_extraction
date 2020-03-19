@@ -109,7 +109,6 @@ class back_window(QMainWindow):
     # F2를 누를시 스레드로 실행된다 
     def running(self):
         global check
-        co = "0 1 2 3 4 5 6 7 8 9 A B C D E F"
 
         # 1. 11172 글자 전부 이미지화 시키는 범위
         #11172글자 전부를 이미지화 시키고싶다면 하단 start,end,name 주석 풀기
@@ -125,24 +124,34 @@ class back_window(QMainWindow):
         # end = "318E"
         # name='mini'
 
+      
+        # 유니코드 배열을 만들기 위한 문자의 범위 
+        # 하단에 Hangul_Syllables 범위를 만들기 위해 사용됨
+        co = "0 1 2 3 4 5 6 7 8 9 A B C D E F"
         co = co.split(" ")
         """
         유니코드 범위 0000 ~ FFFF 까지의 배열을 만드는 부분
+        Hangul_Syllables 폰트 파일에서 한글을 추출하기위해 시작과 끝 유니코드 값이 저장되어있고 
+        반복문에서 이 범위에 해당하는 이미지를 추출함
         """
-        Hangul_Syllables = [a + b + c + d
+        hangul_syllables = [a + b + c + d
                             for a in co
                             for b in co
                             for c in co
                             for d in co]
 
-        Hangul_Syllables = np.array(Hangul_Syllables)
-        print(Hangul_Syllables)
-        s = np.where(start == Hangul_Syllables)[0][0]
-        e = np.where(end == Hangul_Syllables)[0][0]
+        hangul_syllables = np.array(hangul_syllables)
+        print(hangul_syllables)
+        
+        # s = 출력하고자 하는 문자의 시작 유니코드값
+        # e = 출력하고자 하는 문자의 끝나는 유니코드값
+        # s~e 에 해당하는 유니코드 값을 추출한다 
+        start_unicode = np.where(start == hangul_syllables)[0][0]
+        end_unicode = np.where(end == hangul_syllables)[0][0]
 
         #start 부터 end 까지 범위 저장
-        Hangul_Syllables = Hangul_Syllables[s: e + 1]
-        # print(Hangul_Syllables)
+        hangul_syllables = hangul_syllables[start_unicode: end_unicode + 1]
+        # print(hangul_syllables)
 
 
         fonts = os.listdir("C:/ttf/")
@@ -173,7 +182,7 @@ class back_window(QMainWindow):
                 사용자가 입력한 폰트의 크기에 맞게 그린다 그리고 그 결과를 저장한다 
                 
                 """
-                for uni in tqdm(Hangul_Syllables):
+                for uni in tqdm(hangul_syllables):
 
                     canvas = Image.new('RGB', (text_width, text_height), "white")
 
