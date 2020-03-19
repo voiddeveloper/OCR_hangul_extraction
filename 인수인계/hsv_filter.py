@@ -97,6 +97,8 @@ def findContour(binary_image):
 
 
 # 컨투어 x,y 최소, 최대 값 찾기
+# filter_variable은 딕셔너리 구조로 되어있다.
+# 안에 값은 글자의 최소 가로길이, 글자의 최소 세로길이, 컨투어 안에서 색상이 바뀌는 횟수가 들어있다.
 def findMinMaxPoint(image, contour, hierarchy, filter_variable):
     min_max_list = []
 
