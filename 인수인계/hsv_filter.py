@@ -33,8 +33,8 @@ OpenCV - contour => https://opencv-python.readthedocs.io/en/latest/doc/15.imageC
 ex ) 하얀색과 검은색이 hsv에선 어떠한 값에서 나타나는가?
 
 """
- 
- 
+
+
 ###################################################
 # 이미지에서 필터 적용하기 코드 + 필터를 거친 결과물 저장하기
 # resultFolder에 저장되고 있음
@@ -44,13 +44,13 @@ ex ) 하얀색과 검은색이 hsv에선 어떠한 값에서 나타나는가?
 import cv2
 import numpy as np
 import time
- 
+
 # img_number = 0
 
 # 색 필터 - 이진화 이미지 반환한다.
 # img_color는 원본인 bgr 이미지를 인자로 받는다.
-# color_dict은 dictionary 구조로 되어있으며, 
-# 그 안의 key값은 색상, 색상범위, hsv의 s 및 v범위, 
+# color_dict은 dictionary 구조로 되어있으며,
+# 그 안의 key값은 색상, 색상범위, hsv의 s 및 v범위,
 # 글자의 가로길이 제한, 세로길이 제한, 글자의 색이 바뀌는 횟수 등의 키 값이 들어있다.
 def colorFilter(img_color, color_dict):
     image = cv2.cvtColor(img_color, cv2.COLOR_BGR2HSV)
@@ -97,7 +97,7 @@ def findContour(binary_image):
 
 
 # 컨투어 x,y 최소, 최대 값 찾기
-def findMinMaxPoint(bi_image, image, contour, hierarchy, filter_variable, color_dict_info):
+def findMinMaxPoint(image, contour, hierarchy, filter_variable):
     min_max_list = []
 
     global img_number
@@ -582,7 +582,7 @@ if __name__ == '__main__':
         contour, hierarchy = findContour(bi_image)
 
         # findMinMaxPoint() - 글자스러운 컨투어를 찾으면서 글자의 영역 좌표를 반환해주는 함수
-        contour_position = findMinMaxPoint(bi_image, img_color, contour, hierarchy, filter_variable, color_dict_info)
+        contour_position = findMinMaxPoint(img_color, contour, hierarchy, filter_variable)
 
         # 글자스러운 컨투어가 있다면 해당 컨투어의 네모 영역 좌표를 저장한다.
         if contour_position:
