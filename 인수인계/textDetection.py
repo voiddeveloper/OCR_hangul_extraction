@@ -52,12 +52,10 @@ def hsvEqualized(hsv_image):
     start_time = time.time()
 
     h, s, v = cv2.split(hsv_image)
+    # clahe: openCV에서 제공하는 평활화 기법, 일정한 타일 크기로 이미지를 쪼개는 용도이다.
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
 
     # h,s,v값을 히스토그램 평활화
-    # equalizedH = cv2.equalizeHist(h)
-    # equalizedS = cv2.equalizeHist(s)
-    # equalizedV = cv2.equalizeHist(v)
     equalizedH = clahe.apply(h)
     equalizedS = clahe.apply(s)
     equalizedV = clahe.apply(v)
@@ -65,14 +63,10 @@ def hsvEqualized(hsv_image):
     # h,s,v,를 각각 평활화 작업후 를 합쳐서 새로운 hsv 이미지를 만듦.
     new_hsv_image = cv2.merge([equalizedH, equalizedS, equalizedV])
 
-    # hsv -> bgr
-    # new_hsv_image = cv2.cvtColor(new_hsv_image, cv2.COLOR_HSV2BGR)
-
     print('hsv 평활화 후 bgr 이미지로 변환 : ', time.time() - start_time, '\n')
-    # return new_hsv_image
     return new_hsv_image
 
-# 색의 개수 만큼 검은색 이미지를 만든다.
+# 색의 개수 만큼 검은색 이미지를 만드는 용도
 def createBlackImage(image):
     start_time = time.time()
 
@@ -88,16 +82,20 @@ def createBlackImage(image):
 
     return draw_image_list
 
-
+# 필터링된 이미지에서 한글스러운 부분의 좌표를 반환하는 용도
 def hangulFilter(image):
     height, width = image.shape
 
+    # 한글스러운 영역의 좌표
     point_list = []
 
+    # image 내에서 contour 정보 찾기
     con, hir = findContour(image)
 
+    # 원본 이미지와 같은 크기의 검은 이미지 만들기
     black = np.zeros_like(image)
 
+    # 글자스러움을 가지지 않은 contour들의 index값
     remove_contour_index = []
 
     for idx, j in enumerate(con):
@@ -106,19 +104,25 @@ def hangulFilter(image):
         # 둘레
         arc_len = cv2.arcLength(j, False)
 
-        # 제외
+        # 글자스러움의 기준을 다음과 같이 정했다.
+        # 1. contour의 가로+세로가 둘레보다 적을 때는 글자스럽지 않다.
+        # 2. 이미지의 가로와 contour의 가로 크기가 같거나, 이미지의 세로와 contour의 세로 크기가 같다면 글자스럽지 않다.
+        # 위의 2조건에 의해 글자스럽지 않다고 판단된 contour를 제거한다.
         if arc_len > width + height or (w == width or h == height):
             remove_contour_index.append(idx)
 
     remove_contour_index.reverse()
 
+    # 글자스럽지 않은 contour 삭제
     if remove_contour_index:
         for i in remove_contour_index:
             del con[i]
 
+    # 글자스러운 contour를 black 이미지에서 표시한다.
     for idx, j in enumerate(con):
         black = cv2.drawContours(black, con, idx, color=(255, 255, 255), thickness=-1)
 
+    # 글자스러운 contour 정보
     new_con, new_h = findContour(black)
 
     for i, con in enumerate(new_con):
@@ -129,9 +133,14 @@ def hangulFilter(image):
 
         # 둘레
         arc_len = round(cv2.arcLength(con, False), 2)
-
+        # 전체 영역에서 글자가 차지하는 비율
         percent = int((area * 100) / (w * h))
 
+        # 글자가 아니라고 판다는 하는 기준은 다음과 같다.
+        # 1. 글자의 가로 또는 세로가 10픽셀 이하 + 글자의 면적이 200 이하 (너무 작은 잡음들은 글씨로 보지 않는다.)
+        # 2. 글자의 둘레가 40 이하
+        # 3. 글자가 전체 영역에서 차지하는 비율이 10% 이하
+        # 위의 조건에 의해 글자스럽지 않은 contour를 전부 제거한다.
         if ((w <= 10 or h <= 10) and area < 200):
             continue
 
@@ -141,6 +150,7 @@ def hangulFilter(image):
         if percent < 10:
             continue
 
+        # 위에서 설명한 글자스럽지 않은 조건을 전부 피한 contour를 결과 파일로 저장한다.
         else:
             cimg = black[y:y + h + 1, x:x + w + 1]
             cv2.imwrite(
@@ -162,13 +172,11 @@ def blackImageDraw(x_y_line_image, black_image_list, bgr_image):
     print('검은색 이미지 위에 색 그리기 시작')
     devide_range = math.ceil(255 / image_num)
 
-    cv2.imshow('sdfsfd',x_y_line_image)
-    cv2.waitKey(0)
-
     contour_count = 0
-
+    # 한글스러운 영역의 좌표
     point_list = []
 
+    # 색을 image_num 만큼 나눈 다음, 각 영역에 해당하는 이미지 확인하는 용도
     for index, image in enumerate(black_image_list):
         pts = np.where(
             (x_y_line_image >= (devide_range * (index))) & (x_y_line_image < (devide_range * (index + 1))))
@@ -248,7 +256,7 @@ bgr_x_line_add_y_line_image = xLineYLineAdd(gray_image)
 # cv2.imshow('bgr_x_line_add_y_line_image', bgr_x_line_add_y_line_image)
 
 
-"""##########  2. 가로선 세로선만 있는 이미지로 변환 ########## """
+"""##########  3. 이미지를 이진화(OTSU)이미지로 변환 ########## """
 th, bi_image = cv2.threshold(bgr_x_line_add_y_line_image, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
 
 # 검은색 이미지 만들기
