@@ -81,7 +81,7 @@ class back_window(QMainWindow):
         self.info4 = QLabel('이미지 넓이', self)
         self.info4.move(10,150)
         self.info4.resize(250,50)
-        self.wwidth=QLineEdit(self)
+        self.width=QLineEdit(self)
         self.width.setText("50")
         self.width.move(10,200)
 
