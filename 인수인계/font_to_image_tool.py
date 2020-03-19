@@ -82,15 +82,15 @@ class back_window(QMainWindow):
         self.info4.move(10,150)
         self.info4.resize(250,50)
         self.wwidth=QLineEdit(self)
-        self.wwidth.setText("50")
-        self.wwidth.move(10,200)
+        self.width.setText("50")
+        self.width.move(10,200)
 
         self.info5 = QLabel('이미지 높이', self)
         self.info5.move(150, 150)
         self.info5.resize(250, 50)
-        self.hhight = QLineEdit(self)
-        self.hhight.setText("50")
-        self.hhight.move(150, 200)
+        self.hight = QLineEdit(self)
+        self.hight.setText("50")
+        self.hight.move(150, 200)
 
         self.info6 = QLabel('폰트 크기', self)
         self.info6.move(300, 150)
@@ -169,13 +169,16 @@ class back_window(QMainWindow):
                 tt = ttf.split(".ttf")[0]
                 if not os.path.exists('C:/ttf_result/' + tt+"_"+name):
                     os.mkdir('C:/ttf_result/' + tt+"_"+name)
-
+                
+             
+                #ttf폴더 안에 있는 폰트 파일
+                #ttf 파일에 있는 폰트들이 순서대로 들어감
                 font = ImageFont.truetype(str(font_path) + ttf, int(self.ffont.text()))
 
                 # 이미지 사이즈 지정
                 # 사용자가 입력한 사이즈 대로 지정함
-                text_width = int(self.wwidth.text())
-                text_height = int(self.hhight.text())
+                text_width = int(self.width.text())
+                text_height = int(self.hight.text())
 
                 """
                 사용자가 입력한 이미지 크기 만큼 흰색 도화지를 만든다음
@@ -190,7 +193,9 @@ class back_window(QMainWindow):
                     draw = ImageDraw.Draw(canvas)
                     draw_text = chr(int(uni, 16))
                     w, h = font.getsize(draw_text)
+                    #이미지의 중간 부분에 검은색으로 글씨를 쓴다
                     draw.text(((text_width - w) / 2.0, (text_height - h) / 2.0), draw_text, 'black', font)
+                    # 결과 이미지를 저장한다 
                     canvas.save('C:/ttf_result/' + ttf.split(".ttf")[0] +"_"+name+ "/" + draw_text + '.png', "PNG")
 
                     if check == False :
