@@ -23,7 +23,7 @@
 
 아래 코드에 있는 find_contour(), boundingRect()등의
 OpenCv 함수는 공식 홈페이지인 https://docs.opencv.org/master/d6/d00/tutorial_py_root.html에서 참고하면 된다.
-
+ 
 문제점 :
 1.
 '가' 라는 글자와 '카'라는 글자가 되게 비슷하여 일치율이 높게 나옴
