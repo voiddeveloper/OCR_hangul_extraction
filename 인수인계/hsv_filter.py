@@ -45,8 +45,6 @@ import cv2
 import numpy as np
 import time
 
-# img_number = 0
-
 # 색 필터 - 이진화 이미지 반환한다.
 # img_color는 원본인 bgr 이미지를 인자로 받는다.
 # color_dict은 dictionary 구조로 되어있으며,
@@ -100,59 +98,57 @@ def findContour(binary_image):
 # filter_variable은 딕셔너리 구조로 되어있다.
 # 안에 값은 글자의 최소 가로길이, 글자의 최소 세로길이, 컨투어 안에서 색상이 바뀌는 횟수가 들어있다.
 def findMinMaxPoint(image, contour, hierarchy, filter_variable):
+    # min_max_list: 이 메소드의 최종 리턴값, contour의 최소, 최대값 좌표가 저장된다.
     min_max_list = []
-
-    global img_number
 
     for i, con in enumerate(contour):
 
+        # x: contour의 시작점 x 좌표
+        # y: contour의 시작점 y 좌표
+        # x_width: contour의 가로 길이
+        # y_height: contour의 세로 길이
         x, y, x_width, y_height = cv2.boundingRect(con)
 
         """
         1번 필터
-        가로 세로 길이가 모두 10픽셀 이하인 글자는 잡지 않겠다.
+        가로 길이가 'width_limit_pixel' 픽셀 이하인 글자 + 세로 길이가 'height_limit_pixel' 픽셀 이하인 글자는 잡지 않겠다.
         """
         if x_width <= filter_variable['width_limit_pixel'] and y_height <= filter_variable[
             'height_limit_pixel']:
             continue
         else:
-            # 픽셀의 색을 넣을 리스트
-            ll = []
+            # pixel_color_list: 픽셀의 색을 넣을 리스트
+            pixel_color_list = []
             # 이미지와 동일한 크기의 검은색 이미지를 만든다
             cimg = np.zeros_like(image)
-            # 검은색 이미지(cimg)에 컨투어 크기만큼 흰색으로 그림
-            # 컨투어 안에도 흰색으로 차있음
             ###########################################################################
             # 2020-01-30 황준환 작업
             # contour 안에 있는 자식 contour 영역은 흰색으로 칠하면 안된다.
             # 현재 모든 contour list를 가지고 있다보니, 해당 필터에 속하지 않는 부분도 같이 잡히고 있다. (자식 contour 영역은 무슨 색인지 알 수 없다.)
             # 따라서 hierarchy 값을 참조해서 부모가 몇번 나오는지 확인한다. 홀수번째 부모가 존재하는 contour는 색을 알수 없는 contour로 본다.
             # 다만, 짝수번째 부모가 존재하는 contour는 해당 필터에 속하는 색이 될 수도 있기 때문에, 이때는 예외처리하지 않는다.
+            
+            # parentCount: 몇번째 부모인지 확인하는 용도
             parentCount = 0
-
-            ##### 테스트용, 필터를 통과한 모든 contour 정보를 확인한다. #####
-            # testimg = np.zeros_like(image)
-            # cv2.drawContours(testimg,contour,i,color=(255,255,255),thickness=-1)
-            # cv2.imshow('testimg', testimg)
-            # cv2.waitKey(0)
-            ##################
 
             # 해당 contour의 부모가 존재 하는지 확인한다.
             # 부모가 있다면 해당 부모의 contour 리스트로 타고 올라간다.
             # 타고 올라간 다음, 그 contour도 부모가 있는지 확인한다.
             # 이 과정을 부모 contour가 없을 때까지 계속 반복하고, 총 몇번의 부모가 있었는지 계산한다.
             crop_image=np.zeros_like(image)
+            
             if hierarchy[0][i][3] != -1:
                 parentCount += 1
+                # 다음에 검색할 hierarchy 값
                 nextPoint = hierarchy[0][i][3]
+
                 while True:
+                    # 다음에 검색할 hierarchy 값의 부모가 없다면, 반복을 멈춘다.
                     if hierarchy[0][nextPoint][3] == -1:
                         break
                     else:
                         nextPoint = hierarchy[0][nextPoint][3]
                         parentCount += 1
-
-                # print ('parentCount 값 : ', parentCount)
 
                 # 짝수번의 부모가 있었다면 이 contour 영역은 계산해봐야 하기 때문에, 흰색으로 칠한다.
                 if parentCount % 2 == 0:
@@ -161,38 +157,24 @@ def findMinMaxPoint(image, contour, hierarchy, filter_variable):
 
             # 부모가 아예 없다면 최상단 contour 이기 때문에, 흰색으로 칠한다.
             else:
-                # print ('parentCount 값 : ', parentCount)
                 cv2.drawContours(cimg, contour, i, color=(255, 255, 255), thickness=-1)
                 cv2.drawContours(crop_image, contour, i, color=(255, 255, 255), thickness=-1)
-            # cv2.imshow("qweqwe",ccimg)
-            # cv2.waitKey(0)
-            ###########################################################################
-            # 기존 구 코드는 주석 처리 해놓음, 위에 조건문을 주석처리한 다음, 아래줄의 주석을 해제하면 기존의 모든 contour를 흰색으로 칠하는 과정으로 돌아갈 수 있음.
-            # cv2.drawContours(cimg,contour,i,color=(255,255,255),thickness=-1)
-
-            # 색 필터를 뚫고 나온 contour 확인용 디버그
-            # cv2.imshow('test1', cimg)
-            # cv2.waitKey(0)
-
-            # hierarchy에 해당 컨투어의 인덱스를 포함하는것 모두 검색
+            
+            # hierarchy에 해당 contour의 인덱스를 포함하는 것을 모두 검색한다.
             index, position = np.where(hierarchy[0] == i)
+
             for n in range(len(index)):
-                # 해당컨투어를 부모로 가진것만 검색해 자식 컨투어의 영역은 검은색으로 색칠
+                # 해당컨투어를 부모로 가진것만 검색해 자식 컨투어의 영역은 검은색으로 색칠한다.
                 if position[n] == 3:
                     cv2.drawContours(cimg, contour, index[n], color=(0,0,0), thickness=-1)
                     # #####################################################################################
                     # 2020-01-27 황준환 작업
                     # # 자식 contour의 무게 중심을 구하고, 자식 컨투어의 상/하/좌/우를 한칸씩 땡기기 알고리즘 추가
-                    # 2020-01-28 황준환 작업
-                    # # 한칸씩 땡긴 영역의 배경색을 인식하는 문제가 발생, 이 영역을 인식해서는 안되기 때문에 다시 주석처리 함
-                    # # M = 자식 contour의 moments 값
                     M = cv2.moments(contour[index[n]])
                     # cx, cy = 자식 contour의 무게중심 좌표
                     if M['m00'] != 0:
                         cx = int(M['m10']/M['m00'])
                         cy = int(M['m01']/M['m00'])
-                        # print (cx, cy)
-                        # print("계산전", contour[index[n]])
 
                         for cnt in contour[index[n]]:
                             if cnt[0][0] < cx:
@@ -205,14 +187,10 @@ def findMinMaxPoint(image, contour, hierarchy, filter_variable):
                             elif cnt[0][1] > cy:
                                 cnt[0][1] = cnt[0][1] - 1
                         cv2.drawContours(crop_image, contour, index[n], color=(0,0,0), thickness=-1)
-
-                    #     # print("계산후", contour[index[n]])
                     # #####################################################################################
 
-            # 흰색 좌표를 저장함
+            # 흰색으로 칠해진 좌표를 pts에 저장함
             pts = np.where(cimg == 255)
-            # print("pts 값 : ", pts)
-            # print("값 : ", len(pts[0]))
 
             #############################################################################
             # 2020-01-30 황준환 작업
@@ -220,42 +198,26 @@ def findMinMaxPoint(image, contour, hierarchy, filter_variable):
             # 이때는 cimg가 무조건 검은색이기 때문에, 이 경우에는 결과를 저장하지 않는다.
             if len(pts[0]) != 0:
                 # 원본 이미지에서 해당 좌표에 어떤 색이 채워져 있는지 저장
-                ll.append(image[pts[0], pts[1]])
+                pixel_color_list.append(image[pts[0], pts[1]])
 
-                # cv2.imshow('test', cimg)
-                # cv2.waitKey(0)
-
-                # 중복을 제거해주는 부분
-                pixel_change_count = list(set([tuple(set(ll[0])) for ll[0] in ll[0]]))
+                # pixel_change_count: contour 안에서 색상이 바뀌는 횟수
+                # pixel_color_list에 존재하는 색상의 개수를 구한다.
+                pixel_change_count = list(set([tuple(set(pixel_color_list[0])) for pixel_color_list[0] in pixel_color_list[0]]))
+                
+                # pixel_color_list의 갯수가 pixel_change_count보다 적다면, 글씨 contour일 것이다.
+                # 해당 contour를 저장한다.
                 if len(pixel_change_count) <= filter_variable['pixel_change_count']:
-                    # cv2.imshow("qweqwe",cimg)
-                    # cv2.waitKey(0)
-                    # op_draw = cv2.drawContours(image ,contour,i,color=(0,255,0),thickness=1)
-                    # op_draw = cv2.rectangle(image, (x_min, y_min), (x_max, y_max), (0, 0, 255), 1)
-                    # cv2.imshow('sdf', op_draw)
-
-                    # cv2.imshow("qwe",cimg)
                     crop_image = crop_image[y:y+y_height + 1, x:x+x_width + 1]
-                    # cv2.waitKey(0)
-                    # cv2.destroyAllWindows()
                     # 2020 - 01 - 31 ( 동휘작업)
                     # crop이미지를 분석하여 잡음을 제거하는 메서드
                     remove_noise_flag = removeNoise(crop_image)
 
                     if remove_noise_flag == False:
                         # 2020-01-30 동휘 작업 ) 크롭한 이미지 저장할때 파일 이름
-                        # file_name = "_color_" + str(color_dict_info['color']) + \
-                        #             "_s_range_" + str(color_dict_info['s_range']) + \
-                        #             "_v_range_" + str(color_dict_info['v_range']) + \
-                        #             "_count_" + str(color_dict_info['pixel_change_count'])
-
-                        # cv2.imwrite("resultFolder/" + str(img_number) + "_" + file_name + ".png", ccimg)
-                        # img_number += 1
-
-                        # 모든 필터를 통과한 후, 최종적으로 저장할 결과물을 확인하는 디버그
-                        # cv2.imshow('test', cimg)
-                        # cv2.waitKey(0)
-                        # cv2.destroyAllWindows()
+                        file_name = "_color_" + str(color_dict_info['color']) + \
+                                    "_s_range_" + str(color_dict_info['s_range']) + \
+                                    "_v_range_" + str(color_dict_info['v_range']) + \
+                                    "_count_" + str(color_dict_info['pixel_change_count'])
 
                         # 모든 필터에 통과한다면 min_max_list에 네모영역 좌표를 추가한다.
                         min_max_list.append([x, y, x+x_width+1, y+y_height+1])
@@ -264,23 +226,24 @@ def findMinMaxPoint(image, contour, hierarchy, filter_variable):
 
 # 2020 - 01 - 31 ( 동휘작업)
 # crop한 이미지를 분석하여 잡음을 제거하는 메서드
+# crop_image: crop한 이미지 파일
 def removeNoise(crop_image):
-
     h,w,c = crop_image.shape
 
-    # 종횡비
+    # ratio1 : 세로 / 가로
+    # ratio2 : 가로 / 세로
     ratio1 = (h/w)
     ratio2 = (w/h)
 
-    # 종횡비율
+    # error: 종횡비 기준
     error = 5
 
-    # 글자가 차지하는 영역을 세기 위한 변수 / 흰색일때만 카운트함
+    # 글자가 차지하는 영역을 세기 위한 변수, 흰색일때만 카운트함
     count = 0
 
     for i in range(0,h):
         for j in range(0,w):
-            color, a,b = crop_image[i][j]
+            color = crop_image[i][j][0]
 
             """ 
             필터 1 : 
@@ -289,22 +252,23 @@ def removeNoise(crop_image):
             2. 체크한 픽셀중에서 흰색이 하나도 없다면 잡음으로 처리한다.
             """
             try:
-                top,a,b = crop_image[i-1][j]
+                top = crop_image[i-1][j][0]
             except:
-                top,a,b = crop_image[i][j]
+                top = crop_image[i][j][0]
             try:
-                left,a,b = crop_image[i][j-1]
+                left = crop_image[i][j-1][0]
             except:
-                left,a,b = crop_image[i][j]
+                left = crop_image[i][j][0]
             try:
-                down,a,b = crop_image[i+1][j]
+                down = crop_image[i+1][j][0]
             except:
-                down,a,b = crop_image[i][j]
+                down = crop_image[i][j][0]
             try:
-                right,a,b = crop_image[i][j+1]
+                right = crop_image[i][j+1][0]
             except:
-                right,a,b = crop_image[i][j]
+                right = crop_image[i][j][0]
 
+            # 체크한 픽셀의 유무를 확인하는 용도
             flag_count = 0
 
             if color == 255:
@@ -322,6 +286,7 @@ def removeNoise(crop_image):
                     return True
                 count += 1
 
+    # 글자가 차지하는 영역의 비율
     percent = int((count * 100) / (h * w))
 
     # 잡음
@@ -347,7 +312,7 @@ def removeNoise(crop_image):
         # 종횡비
         # ratio1 : 세로 / 가로
         # ratio2 : 가로 / 세로
-        # error : 종횡비율
+        # error: 종횡비 기준
 
         # 잡음
         if ratio1 < error and ratio2 < error:
@@ -358,8 +323,6 @@ def removeNoise(crop_image):
     # 글자
     else:
         return False
-
-
 
 
 if __name__ == '__main__':
@@ -437,15 +400,15 @@ if __name__ == '__main__':
     result_filter_list.append([white_filter_result_image, color_dict])
 
     # 1번에서 설정한 s_range, v_range값은 40, 20이였다.
-    # 총 색상필터를 적용할 이미지는 40 * 20 * 7(빨, 주, 노, 초, 연초록하늘, 파랑, 보라) 개이다.
+    # 총 색상필터를 적용할 이미지는 40 * 20 * 7(빨, 주, 노, 초, 연초록하늘, 파랑, 보라)개 이다.
     for s in range(s_range):
         for v in range(v_range):
 
-            # 하얀색 필터가 겹치면 제외
+            # 하얀색 필터와 영역이 겹치면 제외
             if s * (256 / s_range) < 50 and v * (256 / v_range) > 180:
                 continue
 
-            # 검은색 필터가 겹치면 제외
+            # 검은색 필터와 영역이 겹치면 제외
             if s * (256 / s_range) < 255 and v * (256 / v_range) < 50:
                 continue
 
@@ -577,8 +540,6 @@ if __name__ == '__main__':
     new_min_max_point_list = []
     result_point_list = [] # 최종 글자스러움을 가진 영역 좌표만 넣는 변수
 
-    # print('result_filter_list : ', result_filter_list)
-
     for bi_image, color_dict_info in result_filter_list:
         # 색상 필터에서 나온 이미지에서 컨투어를 찾는과정
         contour, hierarchy = findContour(bi_image)
@@ -593,7 +554,6 @@ if __name__ == '__main__':
 
     # 중복된 영역이 있다며 제거한다.
     result_point_list = list(set(map(tuple, result_point_list)))
-    # print('point_list : ', point_list)
 
     """####################################################################################"""
     """ ############ 6. 최종적으로 이미지위에 글자스러움을 가진 좌표영역을 빨간색으로 그린다. #######"""
