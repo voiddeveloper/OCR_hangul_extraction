@@ -31,6 +31,8 @@ OpenCv 함수는 공식 홈페이지인 https://docs.opencv.org/master/d6/d00/tu
 
 2. 일치율을 계산하는 테스트 방식이 올바른 것인지 잘 모르겠음. 테스트 하는 방법에 대해서 연구가 필요함.
 
+consonant 단어 : 자음
+vowel 단어 : 모음
 
 """
 
