@@ -13,7 +13,7 @@ bgr 이미지는 b - 255개 , g - 255개, r - 255개 총 255*255*255개의 색�
 """
 
 import time
-import cv2 
+import cv2
 
 # 저해상도 이미지로 바꾸기
 # 256 * 256 * 256 개수의 색을 - > devide * devide * devide 개수의 색깔로 바꾼다.
@@ -25,7 +25,7 @@ def similarColorBinding(image, devide):
     height, width, channel = image.shape
 
     color_list = []
- 
+
     for i in range(height):
         for j in range(width):
             b, g, r = image[i][j]
@@ -52,8 +52,8 @@ def similarColorBinding(image, devide):
             ex) devide값이 2일때 값은 0 127 255 
             """
             range_ = int(256 / devide)
-            기준 = (range_) * (devide / 2) - 1
-            if b <= 기준:
+            color_limit = (range_) * (devide / 2) - 1
+            if b <= color_limit:
                 if b==127:
                     b = (int(b / range_)-1) * (range_)
                 else:
@@ -61,7 +61,7 @@ def similarColorBinding(image, devide):
             else:
                 b = (int(b / range_) + 1) * (range_ )
 
-            if g <= 기준:
+            if g <= color_limit:
                 if g==127:
                     g = (int(g / range_)-1) * (range_)
                 else:
@@ -70,7 +70,7 @@ def similarColorBinding(image, devide):
                 g = (int(g / range_) + 1) * (range_ )
 
 
-            if r <= 기준:
+            if r <= color_limit:
                 if r==127:
                     r = (int(r / range_)-1) * (range_)
                 else:
