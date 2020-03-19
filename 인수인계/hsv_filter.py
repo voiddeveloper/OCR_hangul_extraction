@@ -47,7 +47,11 @@ import time
  
 # img_number = 0
 
-# 색 필터 - 이진화 이미지 반환
+# 색 필터 - 이진화 이미지 반환한다.
+# img_color는 원본인 bgr 이미지를 인자로 받는다.
+# color_dict은 dictionary 구조로 되어있으며, 
+# 그 안의 key값은 색상, 색상범위, hsv의 s 및 v범위, 
+# 글자의 가로길이 제한, 세로길이 제한, 글자의 색이 바뀌는 횟수 등의 키 값이 들어있다.
 def colorFilter(img_color, color_dict):
     image = cv2.cvtColor(img_color, cv2.COLOR_BGR2HSV)
 
