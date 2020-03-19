@@ -143,9 +143,9 @@ class back_window(QMainWindow):
         hangul_syllables = np.array(hangul_syllables)
         print(hangul_syllables)
         
-        # s = 출력하고자 하는 문자의 시작 유니코드값
-        # e = 출력하고자 하는 문자의 끝나는 유니코드값
-        # s~e 에 해당하는 유니코드 값을 추출한다 
+        # start_unicode = 출력하고자 하는 문자의 시작 유니코드값
+        # end_unicode = 출력하고자 하는 문자의 끝나는 유니코드값
+        # start_unicode ~ end_unicode 에 해당하는 유니코드 값을 추출한다 
         start_unicode = np.where(start == hangul_syllables)[0][0]
         end_unicode = np.where(end == hangul_syllables)[0][0]
 
