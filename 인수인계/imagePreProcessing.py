@@ -44,17 +44,6 @@ def png_to_jpg(png_path, target_img):
 
     return img.save(jpg_path, 'JPEG')
 
-
-# 이미지 번호
-# def img_crop_after_img_save(x1, y1, x2, y2, img, index):
-#     cropped = img[y1:y2, x1:x2]
-#     cropped = cv2.resize(cropped, (150, 150), interpolation=cv2.INTER_AREA)
-#     cv2.imwrite('image/crop_image_' + str(index) + '.jpg', cropped)
-# draw_image = None
-# rotate_image = None
-
-
-
 if __name__ == '__main__':
 
     global crop_image_index
