@@ -2,7 +2,7 @@
 
 
 """
- 
+
 
 구글api , 카카오api, 테서렉트 엔진을 사용하는 툴
 테스트를 편리하게 하기위해 만든 툴로 코드 최적화는 하지않음
@@ -35,7 +35,6 @@ ex) fontpath= ../../나눔고딕.ttf
 nova.traineddata 를 사용하고싶을 경우  기타에 nova를 입력하면됨
 """
 
-
 """
 exe 파일로 만들고 싶은경우
 pyinstaller를 사용하면 exe파일로 만들 수 있다
@@ -66,15 +65,13 @@ image = ''
 fileList_Path = []
 select_image = ''
 fontpath = "나눔고딕L.ttf"
-kakao_key='kakaoKey'
-google_json='google.json'
-
-
+# 구글 api  = json 파일 경로
+# 카카오 api = 발급받은 api key
+kakao_key = 'kakaoKey'
+google_json = 'google.json'
 
 
 class Mainwindow(QMainWindow):
-
-
 
     def __init__(self):
         super().__init__()
@@ -98,38 +95,41 @@ class Mainwindow(QMainWindow):
 
         self.combo1.activated[str].connect(self.ComboBoxEvent)
 
-        self.textBox = QTextEdit(self)
-        self.textBox.move(30, 100)
-        self.textBox.resize(300, 400)
-        self.textBox.setReadOnly(True)
+        self.image_list = QTextEdit(self)
+        self.image_list.move(30, 100)
+        self.image_list.resize(300, 400)
+        self.image_list.setReadOnly(True)
 
-        self.textBox1 = QTextEdit(self)
-        self.textBox1.move(350, 100)
-        self.textBox1.resize(300, 400)
-        self.textBox1.setReadOnly(True)
+        self.time_text = QTextEdit(self)
+        self.time_text.move(350, 100)
+        self.time_text.resize(300, 400)
+        self.time_text.setReadOnly(True)
 
         # 실행 저장 버튼
         self.running = QPushButton('실행', self)
         self.running.move(570, 650)
         self.running.clicked.connect(self.RunningClick)
 
-        self.running1 = QPushButton('저장', self)
-        self.running1.move(450, 650)
-        self.running1.clicked.connect(self.SaveClick)
+        self.saving = QPushButton('저장', self)
+        self.saving.move(450, 650)
+        self.saving.clicked.connect(self.SaveClick)
 
         # 라디오버튼
-        self.radio1 = QRadioButton("한국어", self)
-        self.radio1.move(200, 30)
-        self.radio1.setChecked(True)
-        self.radio1.clicked.connect(self.radioButtonClicked)
+        # 테서렉트 엔진을 사용할 떄 한국어를 선택하는 부분
+        self.kor_radio = QRadioButton("한국어", self)
+        self.kor_radio.move(200, 30)
+        self.kor_radio.setChecked(True)
+        self.kor_radio.clicked.connect(self.radioButtonClicked)
 
-        self.radio2 = QRadioButton("영어", self)
-        self.radio2.move(280, 30)
-        self.radio2.clicked.connect(self.radioButtonClicked)
+        # 테서렉트 엔진을 사용할 떄 영어를 선택하는 부분
+        self.eng_radio = QRadioButton("영어", self)
+        self.eng_radio.move(280, 30)
+        self.eng_radio.clicked.connect(self.radioButtonClicked)
 
-        self.radio3 = QRadioButton("", self)
-        self.radio3.move(340, 30)
-        self.radio3.clicked.connect(self.radioButtonClicked)
+        # 테서렉트 엔진을 사용할 떄 기타를 선택하는 부분
+        self.custom_radio = QRadioButton("", self)
+        self.custom_radio.move(340, 30)
+        self.custom_radio.clicked.connect(self.radioButtonClicked)
 
         self.fonttext = QTextEdit("", self)
         self.fonttext.move(370, 30)
@@ -137,11 +137,10 @@ class Mainwindow(QMainWindow):
         self.statusBar = QStatusBar(self)
         self.setStatusBar(self.statusBar)
 
-        self.radio1.setVisible(False)
-        self.radio2.setVisible(False)
-        self.radio3.setVisible(False)
+        self.kor_radio.setVisible(False)
+        self.eng_radio.setVisible(False)
+        self.custom_radio.setVisible(False)
         self.fonttext.setVisible(False)
-
 
         # 드래그앤드롭
         self.setAcceptDrops(True)
@@ -158,111 +157,112 @@ class Mainwindow(QMainWindow):
     스레드를 사용하지않아도되는데 스레드를 사용하지않으면 결과가 나오기 전까지 툴의 모든게 멈춰버림
     """
 
-
     # 실행 버튼 클릭
     def RunningClick(self):
         print("실행버튼 클릭")
         if '미  정' in self.combo1.currentText() or '--선택--' in self.combo1.currentText():
             pass
         elif '구글 api' in self.combo1.currentText():
-            self.textBox1.setText('')
-            tt = threading.Thread(target=self.google_, args=('run',))
-            tt.start()
+            self.time_text.setText('')
+            t = threading.Thread(target=self.google_, args=('run',))
+            t.start()
         elif '카카오api' in self.combo1.currentText():
-            self.textBox1.setText('')
-            tt = threading.Thread(target=self.kakao, args=('run',))
-            tt.start()
+            self.time_text.setText('')
+            t = threading.Thread(target=self.kakao, args=('run',))
+            t.start()
         elif '테서렉트' in self.combo1.currentText():
-            self.textBox1.setText("")
-            if self.radio1.isChecked():
+            self.time_text.setText("")
+            if self.kor_radio.isChecked():
                 print('한국어')
-                tt = threading.Thread(target=self.tesseract, args=('kor', 'run',))
-                tt.start()
-            elif self.radio2.isChecked():
+                t = threading.Thread(target=self.tesseract, args=('kor', 'run',))
+                t.start()
+            elif self.eng_radio.isChecked():
                 print("영어")
-                tt = threading.Thread(target=self.tesseract, args=('eng', 'run',))
-                tt.start()
+                t = threading.Thread(target=self.tesseract, args=('eng', 'run',))
+                t.start()
             else:
-                tt = threading.Thread(target=self.tesseract, args=(self.fonttext.toPlainText(), 'run',))
-                tt.start()
+                t = threading.Thread(target=self.tesseract, args=(self.fonttext.toPlainText(), 'run',))
+                t.start()
 
     # 저장 버튼 클릭
     def SaveClick(self):
         if '미  정' in self.combo1.currentText() or '--선택--' in self.combo1.currentText():
             pass
         elif '구글 api' in self.combo1.currentText():
-            self.textBox1.setText('')
-            tt = threading.Thread(target=self.google_, args=('save',))
-            tt.start()
+            self.time_text.setText('')
+            t = threading.Thread(target=self.google_, args=('save',))
+            t.start()
         elif '카카오api' in self.combo1.currentText():
-            self.textBox1.setText('')
-            tt = threading.Thread(target=self.kakao, args=('save',))
-            tt.start()
+            self.time_text.setText('')
+            t = threading.Thread(target=self.kakao, args=('save',))
+            t.start()
 
         elif '테서렉트' in self.combo1.currentText():
-            self.textBox1.setText("")
-            if self.radio1.isChecked():
+            self.time_text.setText("")
+            if self.kor_radio.isChecked():
                 print('한국어')
-                tt = threading.Thread(target=self.tesseract, args=('kor', 'save',))
-                tt.start()
-            elif self.radio2.isChecked():
+                t = threading.Thread(target=self.tesseract, args=('kor', 'save',))
+                t.start()
+            elif self.eng_radio.isChecked():
                 print("영어")
-                tt = threading.Thread(target=self.tesseract, args=('eng', 'save',))
-                tt.start()
+                t = threading.Thread(target=self.tesseract, args=('eng', 'save',))
+                t.start()
             else:
-                tt = threading.Thread(target=self.tesseract, args=(self.fonttext.toPlainText(), 'save',))
-                tt.start()
+                t = threading.Thread(target=self.tesseract, args=(self.fonttext.toPlainText(), 'save',))
+                t.start()
 
-    # 드래그앤드랍을 할 수 있게 해주는 메소드
+    # 드래그앤드랍을 할 수 있게 해주는 메소드 (꼭 넣어야함)
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
+            # dropEvent 메서드를 실행하는 부분
             event.accept()
-            print("1")
+
 
         else:
             event.ignore()
-            print("2")
-    #드래그앤드랍 이벤트
+
+    # 드래그앤드랍 이벤트
     def dropEvent(self, event):
         global fileList_Path
+        # 드래그앤드랍으로 
         fileList_Path = []
-        self.textBox.setText("")
+        self.image_list.setText("")
 
-        #이미지를 올렸을때 이미지들의 경로를 저장하는 부분
+        # 이미지를 올렸을때 이미지들의 경로를 저장하는 부분
 
         files = [np.unicode(u.toLocalFile()) for u in event.mimeData().urls()]
         for f in files:
             if '.jpg' in f or '.png' in f or '.JPG' in f or '.PNG' in f:
                 fileList_Path.append(f)
-                self.textBox.append(str(f).split("/")[-1])
+                self.image_list.append(str(f).split("/")[-1])
         if (len(fileList_Path) == 0):
-            self.textBox.setText("없음")
+            self.image_list.setText("없음")
 
     # 콤보박스 드롭다운 이벤트
     def ComboBoxEvent(self, text):
         if '테서렉트' in text:
-            self.radio1.setVisible(True)
-            self.radio2.setVisible(True)
-            self.radio3.setVisible(True)
+            self.kor_radio.setVisible(True)
+            self.eng_radio.setVisible(True)
+            self.custom_radio.setVisible(True)
             self.fonttext.setVisible(True)
 
         else:
-            self.radio1.setVisible(False)
-            self.radio2.setVisible(False)
-            self.radio3.setVisible(False)
+            self.kor_radio.setVisible(False)
+            self.eng_radio.setVisible(False)
+            self.custom_radio.setVisible(False)
             self.fonttext.setVisible(False)
 
         if '카카오api' in text or '구글 api' in text:
-            self.textBox1.setText('네트워크 통신으로 시간 체크 어려움')
+            self.time_text.setText('네트워크 통신으로 시간 체크 어려움')
         else:
-            self.textBox1.setText('')
+            self.time_text.setText('')
 
     # 라디오버튼 이벤트
     def radioButtonClicked(self):
         msg = ""
-        if self.radio1.isChecked():
+        if self.kor_radio.isChecked():
             msg = "한국어"
-        elif self.radio2.isChecked():
+        elif self.eng_radio.isChecked():
             msg = "영 어"
 
     def google_(self, active):
@@ -280,15 +280,15 @@ class Mainwindow(QMainWindow):
 
             start = time.time()
 
-            #실질적으로 구굴 api를 실행하는 부분
+            # 실질적으로 구굴 api를 실행하는 부분
             response = client.document_text_detection(image=image)
-            #labels 안엔 반환값들이 들어있음 (글씨의 좌표 , ocr인식후 결과 등등)
+            # labels 안엔 반환값들이 들어있음 (글씨의 좌표 , ocr인식후 결과 등등)
             labels = response.text_annotations
             end = time.time()
-            self.textBox1.append(str(end - start))
+            self.time_text.append(str(end - start))
             print(labels)
-            #이미지 1장에는 글자의 좌표를 받아 박스를 그리고
-            #나머지 1장에는 ocr 인식후 결과를 이미지에 그린다
+            # 이미지 1장에는 글자의 좌표를 받아 박스를 그리고
+            # 나머지 1장에는 ocr 인식후 결과를 이미지에 그린다
             img = cv2.imdecode(np.fromfile(str(va), dtype=np.uint8), cv2.IMREAD_COLOR)
             img1 = cv2.imdecode(np.fromfile(str(va), dtype=np.uint8), cv2.IMREAD_COLOR)
 
@@ -315,7 +315,6 @@ class Mainwindow(QMainWindow):
 
             img1 = np.array(img_pil)
 
-
             """
             run 클릭시 박스를 친 이미지 , 결과를 그린 이미지 2장이 순서대로 출력되고
             save를 클릭할시 현재 경로에 result 파일을 만들고  이미지와 text로 결과를 저장함 
@@ -334,7 +333,7 @@ class Mainwindow(QMainWindow):
                 result, n = cv2.imencode(
                     'google_result/' + str(va).split("/")[-1].split(".")[0] + "_local" + ".png", img,
                     params=None)
-                #이미지 2장을 저장하는부분
+                # 이미지 2장을 저장하는부분
                 if result:
                     with open(
                             'google_result/' + str(va).split("/")[-1].split(".")[0] + "_local" + ".png",
@@ -349,7 +348,7 @@ class Mainwindow(QMainWindow):
                             mode='w+b') as f:
                         n.tofile(f)
 
-                #결과 텍스트를 저장하는 부분
+                # 결과 텍스트를 저장하는 부분
                 text_file = open(
                     'google_result/' + str(va).split("/")[-1].split(".")[0] + "_result.txt", 'w',
                     encoding='utf8')
@@ -363,25 +362,25 @@ class Mainwindow(QMainWindow):
         for va in fileList_Path:
             image_path, appkey = va, kakao_key
             start = time.time()
-            #이미지가 너무 큰 경우 이미지 리사이즈 하는 부분
+            # 이미지가 너무 큰 경우 이미지 리사이즈 하는 부분
             resize_impath = self.kakao_ocr_resize(image_path)
 
             if resize_impath is not None:
                 image_path = resize_impath
                 print("원본 대신 리사이즈된 이미지를 사용합니다.")
 
-            #카카오api를 이용한 결과값 반환
-            #카카오api를 사용해 글자의 좌표를 얻는부분
+            # 카카오api를 이용한 결과값 반환
+            # 카카오api를 사용해 글자의 좌표를 얻는부분
             output = self.kakao_ocr_detect(image_path, appkey).json()
 
             boxes = output["result"]["boxes"]
             boxes = boxes[:min(len(boxes), LIMIT_BOX)]
 
-            #카카오api를 이용한 결과값 반환
-            #ocr의 결과 값 반환 (이미지내에 있는  글씨)
+            # 카카오api를 이용한 결과값 반환
+            # ocr의 결과 값 반환 (이미지내에 있는  글씨)
             output1 = self.kakao_ocr_recognize(image_path, boxes, appkey).json()
             end = time.time()
-            self.textBox1.append(str(end - start))
+            self.time_text.append(str(end - start))
 
             output_xy = []
             print(output1)
@@ -395,7 +394,7 @@ class Mainwindow(QMainWindow):
             img_re = cv2.imdecode(np.fromfile(str(image_path), dtype=np.uint8), cv2.IMREAD_COLOR)
             ex_list = []
             print(len(output['result']['boxes']))
-            #글자의 좌표를 가지고 이미지에 박스를 그리는 부분
+            # 글자의 좌표를 가지고 이미지에 박스를 그리는 부분
             for f, i in enumerate(output['result']['boxes']):
                 cv2.line(img, (i[0][0], i[0][1]), (i[1][0], i[1][1]), (0, 0, 255), 2)
                 cv2.line(img, (i[0][0], i[0][1]), (i[3][0], i[3][1]), (0, 0, 255), 2)
@@ -403,15 +402,15 @@ class Mainwindow(QMainWindow):
                 cv2.line(img, (i[2][0], i[2][1]), (i[3][0], i[3][1]), (0, 0, 255), 2)
                 output_xy.append([i[3][0], i[3][1]])
 
-            #실행을 클릭했을때 이미지를 나타냄
+            # 실행을 클릭했을때 이미지를 나타냄
             if 'run' in active:
                 print("run")
                 cv2.imshow('img', img)
                 cv2.waitKey(0)
                 cv2.destroyAllWindows()
-            #저장을 클릭했을때 이미지를 저장
-            #result 폴더를 만들고 이미지 저장
-            #result 폴더가 이미 있다면 그냥 이미지 저장
+            # 저장을 클릭했을때 이미지를 저장
+            # result 폴더를 만들고 이미지 저장
+            # result 폴더가 이미 있다면 그냥 이미지 저장
             else:
                 print("save")
 
@@ -429,7 +428,7 @@ class Mainwindow(QMainWindow):
             print(output1)
             print(len(output1['result']['recognition_words']))
 
-            #ocr의 결과 를 가지고 이미지에 글씨를 쓰는 부분
+            # ocr의 결과 를 가지고 이미지에 글씨를 쓰는 부분
             font = ImageFont.truetype(fontpath, 20)
             img_pil = Image.fromarray(img_re)
             draw = ImageDraw.Draw(img_pil)
@@ -446,13 +445,13 @@ class Mainwindow(QMainWindow):
 
             img1 = np.array(img_pil)
 
-            #실행을 클릭했을때는 그냥 보여주기만함
+            # 실행을 클릭했을때는 그냥 보여주기만함
             if 'run' in active:
                 cv2.imshow('img', img1)
                 cv2.waitKey(0)
                 cv2.destroyAllWindows()
 
-            #저장을 클릭했을때 이미지의 결과 (txt) 파일과 글씨가 그려진 이미지를 저장
+            # 저장을 클릭했을때 이미지의 결과 (txt) 파일과 글씨가 그려진 이미지를 저장
             else:
                 result, n = cv2.imencode(
                     'kakao_result/' + str(va).split("/")[-1].split(".")[0] + "_reco" + ".png", img1,
@@ -481,19 +480,18 @@ class Mainwindow(QMainWindow):
             img1 = cv2.imdecode(np.fromfile(str(va), dtype=np.uint8), cv2.IMREAD_COLOR)
             start = time.time()
 
-
-            #실질적으로 테서렉트를 실행하는 부분
+            # 실질적으로 테서렉트를 실행하는 부분
             d = pytesseract.image_to_data(img, lang=lang, output_type=Output.DICT)
             print(d)
             end = time.time()
-            self.textBox1.append(str(end - start))
+            self.time_text.append(str(end - start))
 
-            #테서렉트 결과 중에 데이터가 총 몇개가 출력됐는지 확인하는부분
+            # 테서렉트 결과 중에 데이터가 총 몇개가 출력됐는지 확인하는부분
             n_boxes = len(d['level'])
 
             text = ""
 
-            #출력된 갯수만큼 반복문을 돌며 이미지위에 네모박스를 그리는 부분
+            # 출력된 갯수만큼 반복문을 돌며 이미지위에 네모박스를 그리는 부분
             for i in (range(n_boxes)):
                 (x, y, w, h) = (d['left'][i], d['top'][i], d['width'][i], d['height'][i])
                 cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 2)
@@ -505,8 +503,8 @@ class Mainwindow(QMainWindow):
                 cv2.destroyAllWindows()
             else:
                 # 저장하는 부분
-                #result폴더가 있는지 확인한후에 있으면 그냥 저장하고
-                #없으면 result폴더를 만들고 저장함
+                # result폴더가 있는지 확인한후에 있으면 그냥 저장하고
+                # 없으면 result폴더를 만들고 저장함
                 if not (os.path.isdir('tesseract_result')):
                     os.makedirs(os.path.join('tesseract_result'))
                 result, n = cv2.imencode(
@@ -533,15 +531,15 @@ class Mainwindow(QMainWindow):
                 except TypeError:
                     pass
             img1 = np.array(img_pil)
-            #run을 클릭해서 실행하는 경우
-            #글자가 그려진 이미지도 보여줌
+            # run을 클릭해서 실행하는 경우
+            # 글자가 그려진 이미지도 보여줌
             if 'run' in active:
                 cv2.imshow('img', img1)
                 cv2.waitKey(0)
                 cv2.destroyAllWindows()
 
             else:
-            #save를 클릭해서 실행하는 경우 이미지와 결과 텍스트 저장
+                # save를 클릭해서 실행하는 경우 이미지와 결과 텍스트 저장
                 result, n = cv2.imencode(
                     'tesseract_result/' + str(va).split("/")[-1].split(".")[0] + "_reco" + "_" + lang + ".png", img1,
                     params=None)
@@ -616,7 +614,6 @@ class Mainwindow(QMainWindow):
         data = jpeg_image.tobytes()
 
         return requests.post(API_URL, headers=headers, files={"file": data}, data={"boxes": json.dumps(boxes)})
-
 
 
 if __name__ == "__main__":
