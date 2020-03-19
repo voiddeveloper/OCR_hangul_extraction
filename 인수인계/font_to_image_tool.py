@@ -17,7 +17,7 @@ running메서드 안에 주석 확인
 """
 
 """
-exe파일로 만들고싶다면 pyinstaller 
+exe파일로 만들고싶다면 pyinstaller 공부할 것 
 """
  
 import sys, os
@@ -31,6 +31,9 @@ from PyQt5.QtWidgets import  *
 check=False
 
 
+"""
+툴의  ui나 행동 전부가 들어있는 클래스
+"""
 class back_window(QMainWindow):
 
     def keyPressEvent(self, e):
@@ -39,9 +42,11 @@ class back_window(QMainWindow):
         from PyQt5.QtCore import Qt
 
 
-
+# 키보드 입력을 받는부분
+# F2를 누를시에 실행이된다
         if e.key() == Qt.Key_F2:
             if check == False:
+                # running 메서드를 실행하는 
                 t = threading.Thread(target=self.running)
                 t.start()
                 check=True
@@ -76,16 +81,16 @@ class back_window(QMainWindow):
         self.info4 = QLabel('이미지 넓이', self)
         self.info4.move(10,150)
         self.info4.resize(250,50)
-        self.wwidth=QLineEdit(self)
-        self.wwidth.setText("50")
-        self.wwidth.move(10,200)
+        self.width=QLineEdit(self)
+        self.width.setText("50")
+        self.width.move(10,200)
 
         self.info5 = QLabel('이미지 높이', self)
         self.info5.move(150, 150)
         self.info5.resize(250, 50)
-        self.hhight = QLineEdit(self)
-        self.hhight.setText("50")
-        self.hhight.move(150, 200)
+        self.hight = QLineEdit(self)
+        self.hight.setText("50")
+        self.hight.move(150, 200)
 
         self.info6 = QLabel('폰트 크기', self)
         self.info6.move(300, 150)
@@ -100,41 +105,53 @@ class back_window(QMainWindow):
 
         self.show()
 
-
+    # 폰트를 이미지화 시키는 메서드
+    # F2를 누를시 스레드로 실행된다 
     def running(self):
         global check
-        co = "0 1 2 3 4 5 6 7 8 9 A B C D E F"
 
-        #폰트 11172자 전부의 범위
+        # 1. 11172 글자 전부 이미지화 시키는 범위
         #11172글자 전부를 이미지화 시키고싶다면 하단 start,end,name 주석 풀기
+        #start 와 end 는 글자 유니코드의 범위이다
         start = "AC00"
         end = "D7A3"
         name= 'full'
-
-        #폰트 자음과 모음의 범위
-        #자음과 모음만 이미지화 시키고싶다면 하단 start,end,name 주석 풀기
+ 
+ 
+        # 2. 자음과 모음만 이미지화 시키고싶다면 하단 start,end,name 주석 풀기
+        #start 와 end 는 글자 유니코드의 범위이다
         # start = "3131"
         # end = "318E"
         # name='mini'
 
+      
+        # 유니코드 배열을 만들기 위한 문자의 범위 
+        # 하단에 Hangul_Syllables 범위를 만들기 위해 사용됨
+        co = "0 1 2 3 4 5 6 7 8 9 A B C D E F"
         co = co.split(" ")
         """
         유니코드 범위 0000 ~ FFFF 까지의 배열을 만드는 부분
+        Hangul_Syllables 폰트 파일에서 한글을 추출하기위해 시작과 끝 유니코드 값이 저장되어있고 
+        반복문에서 이 범위에 해당하는 이미지를 추출함
         """
-        Hangul_Syllables = [a + b + c + d
+        hangul_syllables = [a + b + c + d
                             for a in co
                             for b in co
                             for c in co
                             for d in co]
 
-        Hangul_Syllables = np.array(Hangul_Syllables)
-        print(Hangul_Syllables)
-        s = np.where(start == Hangul_Syllables)[0][0]
-        e = np.where(end == Hangul_Syllables)[0][0]
+        hangul_syllables = np.array(hangul_syllables)
+        print(hangul_syllables)
+        
+        # start_unicode = 출력하고자 하는 문자의 시작 유니코드값
+        # end_unicode = 출력하고자 하는 문자의 끝나는 유니코드값
+        # start_unicode ~ end_unicode 에 해당하는 유니코드 값을 추출한다 
+        start_unicode = np.where(start == hangul_syllables)[0][0]
+        end_unicode = np.where(end == hangul_syllables)[0][0]
 
         #start 부터 end 까지 범위 저장
-        Hangul_Syllables = Hangul_Syllables[s: e + 1]
-        # print(Hangul_Syllables)
+        hangul_syllables = hangul_syllables[start_unicode: end_unicode + 1]
+        # print(hangul_syllables)
 
 
         fonts = os.listdir("C:/ttf/")
@@ -152,20 +169,23 @@ class back_window(QMainWindow):
                 tt = ttf.split(".ttf")[0]
                 if not os.path.exists('C:/ttf_result/' + tt+"_"+name):
                     os.mkdir('C:/ttf_result/' + tt+"_"+name)
-
+                
+             
+                #ttf폴더 안에 있는 폰트 파일
+                #ttf 파일에 있는 폰트들이 순서대로 들어감
                 font = ImageFont.truetype(str(font_path) + ttf, int(self.ffont.text()))
 
                 # 이미지 사이즈 지정
                 # 사용자가 입력한 사이즈 대로 지정함
-                text_width = int(self.wwidth.text())
-                text_height = int(self.hhight.text())
+                text_width = int(self.width.text())
+                text_height = int(self.hight.text())
 
                 """
                 사용자가 입력한 이미지 크기 만큼 흰색 도화지를 만든다음
                 사용자가 입력한 폰트의 크기에 맞게 그린다 그리고 그 결과를 저장한다 
                 
                 """
-                for uni in tqdm(Hangul_Syllables):
+                for uni in tqdm(hangul_syllables):
 
                     canvas = Image.new('RGB', (text_width, text_height), "white")
 
@@ -173,7 +193,9 @@ class back_window(QMainWindow):
                     draw = ImageDraw.Draw(canvas)
                     draw_text = chr(int(uni, 16))
                     w, h = font.getsize(draw_text)
+                    #이미지의 중간 부분에 검은색으로 글씨를 쓴다
                     draw.text(((text_width - w) / 2.0, (text_height - h) / 2.0), draw_text, 'black', font)
+                    # 결과 이미지를 저장한다 
                     canvas.save('C:/ttf_result/' + ttf.split(".ttf")[0] +"_"+name+ "/" + draw_text + '.png', "PNG")
 
                     if check == False :
